@@ -2,7 +2,11 @@
 // for information about these interfaces
 declare global {
 	namespace App {
-		// interface Error {}
+
+		// Do not define message here a second time!
+		interface Error {
+			devDump: string | undefined
+		}
 		// interface Locals {}
 		// interface PageData {}
 		// interface PageState {}
