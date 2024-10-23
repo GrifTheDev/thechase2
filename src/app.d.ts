@@ -5,7 +5,7 @@ declare global {
 
 		// Do not define message here a second time!
 		interface Error {
-			devDump: string | undefined
+			devDump?: string
 		}
 		// interface Locals {}
 		// interface PageData {}
