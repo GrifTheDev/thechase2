@@ -1,16 +1,17 @@
 <script lang="ts">
   import { readDocData, readUsersData } from "$lib/database/database";
 
-  let content = "Hi!";
+
+  let content = $state("a")
 
   async function HandleDAPress() {
-    const a = await readUsersData("id");
-    
+    //const a = await readUsersData("id");
+    content = "aaaa"
   }
 
-  export { content };
+  
 </script>
 
-<p class="text-3xl">{content}</p>
+<p class="text-3xl text-red-300">{content}</p>
 
-<button on:click={HandleDAPress}>Press me!</button>
+<button onclick={HandleDAPress}>Press me!</button>
