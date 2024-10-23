@@ -14,11 +14,7 @@ async function readDocData(collection: string, docID: string) {
 }
 // TODO: Use readdocdata in here but dont export it?
 async function readUsersData(docID: string) {
-    const collection: string = "users"
-    const docRef = doc(db, collection, docID)
-    const docData = (await getDoc(docRef)).data() as DBUsersType
-    
-    return docData
+    return await readDocData("users", docID) as DBUsersType
 }
 
 export { readDocData, readUsersData }
