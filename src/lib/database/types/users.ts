@@ -7,6 +7,7 @@ interface DBUsersType {
     surname?: string,
     email?: string,
     password?: string,
+    token?: string,
 }
 
 export type {DBUsersType}
