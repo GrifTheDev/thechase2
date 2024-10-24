@@ -17,10 +17,7 @@ async function readDocData(collection: string, docID: string) {
 
   if (docData == undefined) {
     // TODO: BETTER ERROR HANDLING/Create log helper script
-    error(500, {
-      message: `Could not query data from collection ${collection} with ID ${docID}`,
-      devDump: `Could not query data from collection ${collection} with ID ${docID}`,
-    });
+    return undefined
   } else {
     return docData;
   }
@@ -37,7 +34,7 @@ async function updateDocData(collection: string, docID: string, toWrite: any) {
 }
 
 async function readUsersData(docID: string) {
-  return (await readDocData("users", docID)) as DBUsersType;
+  return (await readDocData("users", docID)) as DBUsersType | undefined;
 }
 
 async function updateUsersData(docID: string, data: DBUsersType) {
