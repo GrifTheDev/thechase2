@@ -1,7 +1,6 @@
-import { error } from "@sveltejs/kit";
 import { getDB } from "./initialize_firebase";
 import { doc, getDoc, updateDoc } from "@firebase/firestore";
-import type { DBUsersType } from "$lib/database/types/users";
+import type { DBUsersType } from "$lib/types/database/users";
 
 const { db } = getDB();
 

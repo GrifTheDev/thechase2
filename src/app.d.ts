@@ -1,3 +1,7 @@
+
+
+import type { AuthCookieType } from "$lib/types/misc/auth_cookie";
+
 // See https://kit.svelte.dev/docs/types#app
 // for information about these interfaces
 declare global {
@@ -7,7 +11,9 @@ declare global {
 		interface Error {
 			devDump?: string
 		}
-		// interface Locals {}
+		interface Locals {
+			user: AuthCookieType
+		}
 		// interface PageData {}
 		// interface PageState {}
 		// interface Platform {}
