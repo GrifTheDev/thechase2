@@ -12,6 +12,8 @@ export const load: PageServerLoad = async ({locals}) => {
     if (locals.user != undefined) throw redirect(303, "/")
 }; 
 
+// TODO: Add region suspicion thing
+
 export const actions = {
   default: async ({ cookies, request }) => {
     // !! USE CRYPTO INSTEAD OF MATH.RANDOM() FOR GEN: https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript (third or sum response)
