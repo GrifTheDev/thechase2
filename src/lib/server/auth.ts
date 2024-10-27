@@ -3,6 +3,7 @@
 
 import crypto from "crypto"
 
+// ? Change token gen?
 async function generateNewUserToken(): Promise<string> {
     let finalToken = ""
     const timestamp: string = new Date().getTime().toString()

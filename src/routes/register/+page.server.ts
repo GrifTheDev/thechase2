@@ -14,10 +14,8 @@ export const load: PageServerLoad = async ({locals}) => {
 }; 
 
 // TODO: Add region suspicion thing
-
 export const actions = {
   default: async ({ cookies, request }) => {
-    // !! USE CRYPTO INSTEAD OF MATH.RANDOM() FOR GEN: https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript (third or sum response)
     // !! ADD USER ALREADY EXISTS AND OTHER CHECKS (in login as well)!!!
     const data = await request.formData();
     const email: string = data.get("email")?.toString() || "";
@@ -51,13 +49,5 @@ export const actions = {
       maxAge: 60 * 60 * 24 * 30,
     });
     throw redirect(303, "/")
-    //const dbData = await readUsersData(emailHash);
-
-    
   },
 } satisfies Actions;
-
-
-// 1729802535968
-//const passwordHash = await bcrypt.hash(password, Number(PRIVATE_SALT_ROUNDS))
-//const isa = await bcrypt.compare(password_plaintext, hash)
