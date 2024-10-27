@@ -1,5 +1,5 @@
 import { getDB } from "./initialize_firebase";
-import { doc, getDoc, updateDoc } from "@firebase/firestore";
+import { doc, getDoc, updateDoc, addDoc, collection } from "@firebase/firestore";
 import type { DBUsersType } from "$lib/types/database/users";
 
 const { db } = getDB();
@@ -27,10 +27,29 @@ async function readDocData(collection: string, docID: string) {
    * @private
    */
 async function updateDocData(collection: string, docID: string, toWrite: any) {
-  const docRef = doc(db, collection, docID);
-  const docData = await updateDoc(docRef, toWrite);
-  return docData;
+  try {
+    const docRef = doc(db, collection, docID);
+    const docData = await updateDoc(docRef, toWrite);
+    return docData;
+  } catch (error) {
+    // @ts-ignore
+    if (error.code == "not-found") {
+      await createDoc(collection, docID, toWrite)
+    } else {
+      console.log(error)
+    }
+  } 
 }
+
+/**
+   * @description Use this ONLY when you cannot use a predefined function for a DB write.
+   * @private
+   */
+async function createDoc(col: string, docID: string, toWrite: any) {
+  const collectionRef = collection(db, col)
+  await addDoc(collectionRef, toWrite)
+}
+
 
 async function readUsersData(docID: string) {
   return (await readDocData("users", docID)) as DBUsersType | undefined;
