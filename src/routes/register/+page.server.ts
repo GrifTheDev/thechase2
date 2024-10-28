@@ -1,13 +1,13 @@
 import { redirect, type Actions, error } from "@sveltejs/kit";
 import { createHash } from "crypto";
 import bcrypt from "bcrypt";
-import { updateUsersData } from "$lib/database/database";
+import { readUsersData, updateUsersData } from "$lib/database/database";
 import jwt from "jsonwebtoken"
-import { PRIVATE_JWT_SECRET, PRIVATE_SALT_ROUNDS } from "$env/static/private";
+import { PRIVATE_JWT_SECRET, PRIVATE_PASSWORD_SALT_ROUNDS } from "$env/static/private";
 import type { AuthCookieType } from "$lib/types/misc/auth_cookie";
 import type { PageServerLoad } from "./$types";
 import type { DBUsersType } from "$lib/types/database/users";
-import { generateNewUserToken } from "$lib/server/auth";
+import { createConstantSaltHash, generateNewUserToken } from "$lib/server/auth";
 
 export const load: PageServerLoad = async ({locals}) => {
     if (locals.user != undefined) throw redirect(303, "/")
@@ -16,7 +16,6 @@ export const load: PageServerLoad = async ({locals}) => {
 // TODO: Add region suspicion thing
 export const actions = {
   default: async ({ cookies, request }) => {
-    // !! ADD USER ALREADY EXISTS AND OTHER CHECKS (in login as well)!!!
     const data = await request.formData();
     const email: string = data.get("email")?.toString() || "";
     let password: string = data.get("password")?.toString() || "";
@@ -26,8 +25,17 @@ export const actions = {
     if (email == "" || password == "" || name == "" || surname == "")
       return { code: 400, message: "Please fill out all fields." };
 
-    const emailHash = createHash("sha256").update(email).digest("hex");
-    const passwordHash = await bcrypt.hash(password, Number(PRIVATE_SALT_ROUNDS))
+    // E-mail does not contain @something.com
+    if (email.split("@").length < 2)
+      return { code: 400, message: "Invalid e-mail." };
+    // The part after @ in the email does not contain a .
+    if (email.split("@")[1].split(".").length < 2)
+      return { code: 400, message: "Invalid e-mail." };
+    const emailHash = await createConstantSaltHash(email)
+    console.log(emailHash)
+    //TODO return { code: 409, message: "User already exists." }
+    if (await readUsersData(emailHash) != undefined) return { code: 409, message: "User already exists." };
+    const passwordHash = await bcrypt.hash(password, Number(PRIVATE_PASSWORD_SALT_ROUNDS))
     const token = await generateNewUserToken()
     const dataToInsert: DBUsersType = {
       email: email,
