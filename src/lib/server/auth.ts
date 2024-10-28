@@ -15,6 +15,9 @@ async function generateNewUserToken(): Promise<string> {
 }
 
 // To protect against brute-force attacks, I am using a constant hidden salt to hash email addresses as keys.
+/**
+   * @description Use this whenever you want to hash something with `sha256`.
+   */
 async function createConstantSaltHash (data: string) {
     const pbkdf2Async = promisify(crypto.pbkdf2);
     const hash = (await pbkdf2Async(data, PRIVATE_CONSTANT_HASH_SALT, Number(PRIVATE_CONSTANT_HASH_SALT_ROUNDS), 12, "sha256")).toString("base64")
