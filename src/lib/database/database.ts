@@ -27,8 +27,9 @@ async function readDocData(collection: string, docID: string) {
    * @private
    */
 
-// TODO ADD updatedAt
+// TODO ADD createdAt
 async function updateDocData(collection: string, docID: string, toWrite: any) {
+    Object.assign(toWrite, {updatedAt: new Date().getTime()})
     const docRef = doc(db, collection, docID);
     const docData = await setDoc(docRef, toWrite, {merge: true});
     return docData; 
