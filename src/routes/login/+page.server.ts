@@ -6,9 +6,10 @@ import jwt from "jsonwebtoken"
 import { PRIVATE_JWT_SECRET } from "$env/static/private";
 import type { AuthCookieType } from "$lib/types/misc/auth_cookie";
 import type { PageServerLoad } from "./$types";
+import { createConstantSaltHash } from "$lib/server/auth";
 
 export const load: PageServerLoad = async ({locals}) => {
-    //console.log(locals.user)
+    console.log(locals.user)
     if (locals.user != undefined) throw redirect(303, "/")
 }; 
 
@@ -28,10 +29,8 @@ export const actions = {
     // The part after @ in the email does not contain a .
     if (email.split("@")[1].split(".").length < 2)
       return { code: 400, message: "Invalid e-mail." };
-
-    // !! CHANGE EMAIL HASH TO NEW THING
-    // left comment cus i dont have time to properly test it rn
-    const emailHash = createHash("sha256").update(email).digest("hex");
+    
+    const emailHash = await createConstantSaltHash(email)
 
     const dbData = await readUsersData(emailHash);
 
