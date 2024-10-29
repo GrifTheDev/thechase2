@@ -20,8 +20,10 @@ export const actions = {
     const data = await request.formData();
     const email: string = data.get("email")?.toString() || "";
     let password: string = data.get("password")?.toString() || "";
+    const confirmPswd: string = data.get("confirmPswd")?.toString() || "";
     const name: string = data.get("name")?.toString() || "";
     const surname: string = data.get("surname")?.toString() || "";
+    
 
     if (email == "" || password == "" || name == "" || surname == "")
       return { code: 400, message: "Please fill out all fields." };
@@ -32,6 +34,8 @@ export const actions = {
     // The part after @ in the email does not contain a .
     if (email.split("@")[1].split(".").length < 2)
       return { code: 400, message: "Invalid e-mail." };
+
+    if (confirmPswd != password) return {code: 400, message: "Passwords do not match."}
 
     const emailHash = await createConstantSaltHash(email)
     
