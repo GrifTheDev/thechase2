@@ -8,7 +8,7 @@ import type { AuthCookieType } from "$lib/types/misc/auth_cookie";
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({locals}) => {
-    console.log(locals.user)
+    //console.log(locals.user)
     if (locals.user != undefined) throw redirect(303, "/")
 }; 
 

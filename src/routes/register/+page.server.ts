@@ -14,6 +14,7 @@ export const load: PageServerLoad = async ({locals}) => {
 }; 
 
 // TODO: Add region suspicion thing
+// TODO: LOADING ANIM
 export const actions = {
   default: async ({ cookies, request }) => {
     const data = await request.formData();
@@ -31,10 +32,11 @@ export const actions = {
     // The part after @ in the email does not contain a .
     if (email.split("@")[1].split(".").length < 2)
       return { code: 400, message: "Invalid e-mail." };
+
     const emailHash = await createConstantSaltHash(email)
-    console.log(emailHash)
-    //TODO return { code: 409, message: "User already exists." }
+    
     if (await readUsersData(emailHash) != undefined) return { code: 409, message: "User already exists." };
+    
     const passwordHash = await bcrypt.hash(password, Number(PRIVATE_PASSWORD_SALT_ROUNDS))
     const token = await generateNewUserToken()
     const dataToInsert: DBUsersType = {
@@ -45,7 +47,6 @@ export const actions = {
       token: token
     }
 
-    // !!Look into this, its returning a shorter hash
     await updateUsersData(emailHash, dataToInsert)
     const JWTData: AuthCookieType = {name: name, token: token}
     const JWT = jwt.sign(JWTData, PRIVATE_JWT_SECRET, {expiresIn: "30d"})

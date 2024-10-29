@@ -20,8 +20,11 @@ async function generateNewUserToken(): Promise<string> {
    */
 async function createConstantSaltHash (data: string) {
     const pbkdf2Async = promisify(crypto.pbkdf2);
-    const hash = (await pbkdf2Async(data, PRIVATE_CONSTANT_HASH_SALT, Number(PRIVATE_CONSTANT_HASH_SALT_ROUNDS), 12, "sha256")).toString("base64")
+
+    // * We have to replace all the / because firestore no likey them
+    const hash = ((await pbkdf2Async(data, PRIVATE_CONSTANT_HASH_SALT, Number(PRIVATE_CONSTANT_HASH_SALT_ROUNDS), 12, "sha256")).toString("base64")).replaceAll("/", "")
     return hash
 }
+
 
 export {generateNewUserToken, createConstantSaltHash}
