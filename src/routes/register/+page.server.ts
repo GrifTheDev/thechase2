@@ -10,7 +10,7 @@ import type { DBUsersType } from "$lib/types/database/users";
 import { createConstantSaltHash, generateNewUserToken } from "$lib/server/auth";
 
 export const load: PageServerLoad = async ({locals}) => {
-    if (locals.user != undefined) throw redirect(303, "/")
+    if (locals.user != undefined) throw redirect(303, "/app/dashboard")
 }; 
 
 // TODO: Add region suspicion thing
@@ -61,6 +61,6 @@ export const actions = {
       sameSite: "strict",
       maxAge: 60 * 60 * 24 * 30,
     });
-    throw redirect(303, "/")
+    throw redirect(303, "/app/dashboard")
   },
 } satisfies Actions;

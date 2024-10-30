@@ -10,7 +10,7 @@ import { createConstantSaltHash } from "$lib/server/auth";
 
 export const load: PageServerLoad = async ({locals, url}) => {
     //console.log(locals.user)
-    if (locals.user != undefined) throw redirect(303, "/")
+    if (locals.user != undefined) throw redirect(303, "/app/dashboard")
 }; 
 
 // TODO: Add region suspicion thing
@@ -57,7 +57,7 @@ export const actions = {
         sameSite: "strict",
         maxAge: 60 * 60 * 24 * 30,
       });
-      throw redirect(303, "/")
+      throw redirect(303, "/app/dashboard")
     } else {
       return { code: 400, message: "Invalid email/password." };
     }
