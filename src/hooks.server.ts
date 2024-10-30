@@ -18,7 +18,7 @@ export const handle = (async ({ event, resolve }) => {
         event.cookies.delete("AuthorizationToken", {
           path: "/"
         })
-        throw redirect(303, "/login?ref=vfail")
+        throw redirect(303, "/login")
       } else {
         console.log(`[ERR] [MIDDLEWARE] :: ${error}`)
       }
