@@ -10,6 +10,7 @@
     </div>
     <div class="w-auto p-4 flex flex-row justify-between space-x-4">
         <a class="text-xl text-{data.selected[0] == 1 ? "blue-400" : "white"}" href="/app/dashboard">Dashboard</a>
+        <!--!!Check why and how href is not hitting the middleware without refresh-->
         <a class="text-xl text-{data.selected[1] == 1 ? "blue-400" : "white"}" href="/app/questions">Question sets</a>
         <!--TODO Make it say "Name of user" instead of "Your account" (require chopping off the name if it is too long)-->
         <a class="text-xl text-{data.selected[2] == 1 ? "blue-400" : "white"}" href="/app/account">Your account</a>
