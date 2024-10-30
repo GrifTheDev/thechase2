@@ -1,12 +1,14 @@
 <script lang="ts">
   import { readDocData, readUsersData, updateUsersData } from "$lib/database/database";
+  //import jwt from "jsonwebtoken";
 
   let content = $state("a")
 
   async function HandleDAPress() {
-    const email = "mail@teomilic.com"
+    //const userInfo = jwt.verify("asd", "asdsadasd")
 
-    content = email
+    //@ts-ignore
+    content = userInfo
   }
 
   

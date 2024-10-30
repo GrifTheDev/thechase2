@@ -5,31 +5,27 @@ import jwt from "jsonwebtoken";
 
 export const handle = (async ({ event, resolve }) => {
   const token = event.cookies.get("AuthorizationToken");
-
+  const isProtectedAppRoute = event.url.pathname.split('/').includes("app")
   
   if (token != undefined) {
     try {
         const userInfo = jwt.verify(token, PRIVATE_JWT_SECRET) as AuthCookieType
-
         event.locals.user = userInfo
-
-    } catch (error) {
-      // !!TEST POSSIBLE CASES WHERE THIS HITS
-      // !!TEST POSSIBLE CASES WHERE THIS HITS
-      // !!TEST POSSIBLE CASES WHERE THIS HITS
-      // !!NEXT PRIORITY TASK, CHECK AND HANDLE JWT SIGNAGE FAILED
-        if (event.url.pathname.split('/').includes("app")) {
-          event.cookies.delete("AuthorizationToken", {
-            path: "/"
-          })
-          throw redirect(303, "/login")
-        }
-        
-        // ? WHAT HAPPENS WHEN JWT.VERIFY FAILS?
-        console.error(error)
+    } catch (error: any) {
+      // * Checking if JWT signature verification failed.
+      if (error.toString().startsWith("JsonWebTokenError")) {
+        console.log("[INFO] [MIDDLEWARE] :: JWT signature verification FAILED. Assuming the token was compromized and deleting the cookie.")
+        event.cookies.delete("AuthorizationToken", {
+          path: "/"
+        })
+        throw redirect(303, "/login?ref=vfail")
+      } else {
+        console.log(`[ERR] [MIDDLEWARE] :: ${error}`)
+      }
     }
-  } else {
-    if (event.url.pathname.split('/').includes("app")) throw redirect(303, "/login")
+  } else if (isProtectedAppRoute) {
+    // * User did not log in and is trying to access a protected route.
+    throw redirect(303, "/login")
   }
 
   return await resolve(event);

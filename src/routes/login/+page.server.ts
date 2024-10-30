@@ -8,8 +8,8 @@ import type { AuthCookieType } from "$lib/types/misc/auth_cookie";
 import type { PageServerLoad } from "./$types";
 import { createConstantSaltHash } from "$lib/server/auth";
 
-export const load: PageServerLoad = async ({locals}) => {
-    console.log(locals.user)
+export const load: PageServerLoad = async ({locals, url}) => {
+    //console.log(locals.user)
     if (locals.user != undefined) throw redirect(303, "/")
 }; 
 
