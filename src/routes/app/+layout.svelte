@@ -4,7 +4,7 @@
   let { data, children }: { data: LayoutData, children: Snippet } = $props();
   </script>
 
-<nav class="w-auto p-4 bg-indigo-950 flex flex-row items-center justify-between">
+<nav class="w-auto p-4 bg-nav-bg flex flex-row items-center justify-between border-b border-white">
     <div class="w-auto">
         <a class="font-bold text-3xl text-white" href="/app/dashboard">The Hunt</a>
     </div>
