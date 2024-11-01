@@ -20,8 +20,8 @@ export default {
           '100%': { "transform": 'scale(1)', "background-color": "transparent", "color": "white" },
         },
         buttonActivateKeyframes: {
-          '0%': { transform: 'scale(1.05) rotate(0.7deg)' },
-          '100%': { transform: 'scale(0.95) rotate(-0.7deg)' },
+          '0%': { "transform": 'scale(1.05) rotate(0.7deg)', "background-color": "white", "color": "black", "box-shadow": "0px 0px 0px 0px #FFFFFF" },
+          '100%': { "transform": 'scale(0.95) rotate(-0.7deg)', "background-color": "white", "color": "black", "box-shadow": "0px 0px 15px 4px #FFFFFF" },
         }
       },
       animation: {

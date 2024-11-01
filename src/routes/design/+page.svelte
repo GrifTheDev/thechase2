@@ -1,12 +1,17 @@
 <!--TODO Put these into reusable components.-->
+
+<script>
+  import DefaultButton from "$lib/components/buttons/DefaultButton.svelte";
+  import Heading0 from "$lib/components/headings/Heading0.svelte";
+  import Heading1 from "$lib/components/headings/Heading1.svelte";
+  import DefaultParagraph from "$lib/components/paragraphs/DefaultParagraph.svelte";
+</script>
+
 <div class="bg-dashboard-bg w-screen h-screen">
   <div class="p-6 flex flex-col space-y-4 items-start border-b border-white">
-    <h1 class="font-dm-sans font-bold text-5xl text-white">Welcome Teo!</h1>
-    <h1 class="font-dm-sans text-4xl text-white">Question Sets</h1>
-    <p class="text-white text-lg">You do not have any question sets yet.</p>
-    <button
-      class="text-white text-center border border-white rounded-md p-2 animate-buttonUnHover hover:animate-buttonHover active:animate-buttonActivate"
-      >Create Question Set</button
-    >
+    <Heading0 label="The Hunt"/>
+    <Heading1 label="Question sets"/>
+    <DefaultParagraph label="You do not have any question sets yet. Add some?"/>
+    <DefaultButton label="Lavender Haze" textSize="md" />
   </div>
 </div>
