@@ -4,8 +4,8 @@ export default {
   theme: {
     extend: {
       colors: {
-        "nav-bg": "#070f1c",
-        "dashboard-bg": "#070f1c",
+        "nav-bg": "#000000",
+        "dashboard-bg": "#060A0E",
       },
       fontFamily: {
         "dm-sans": ["DMSans", "sans-serif"]

@@ -1,6 +1,5 @@
 <script lang="ts">
   import DefaultButton from "$lib/components/buttons/DefaultButton.svelte";
-  import Heading0 from "$lib/components/headings/Heading0.svelte";
   import Heading1 from "$lib/components/headings/Heading1.svelte";
   import DefaultParagraph from "$lib/components/paragraphs/DefaultParagraph.svelte";
 
