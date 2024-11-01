@@ -1,12 +1,13 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
   import type { LayoutData } from './$types';
+  import Heading0 from '$lib/components/headings/Heading0.svelte';
   let { data, children }: { data: LayoutData, children: Snippet } = $props();
   </script>
 
 <nav class="w-auto p-4 bg-nav-bg flex flex-row items-center justify-between border-b border-white">
     <div class="w-auto">
-        <a class="font-bold text-3xl text-white" href="/app/dashboard">The Hunt</a>
+        <Heading0 label="The Hunt"/>
     </div>
     <div class="w-auto p-4 flex flex-row justify-between space-x-4">
         <a class="text-xl text-{data.selected[0] == 1 ? "blue-400" : "white"}" href="/app/dashboard">Dashboard</a>

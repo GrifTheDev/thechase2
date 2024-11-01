@@ -1,9 +1,16 @@
 <script lang="ts">
-    let {data} = $props()
-</script>
-<div class='w-screen h-screen bg-dashboard-bg py-3'>
-<div class="w-auto h-auto m-3 pb-3 mt-0">
-    <h1 class="text-3xl font-bold text-white">Hello {data.localsData.user.name}, how are you doing today?</h1>
-</div>
-</div>
+  import DefaultButton from "$lib/components/buttons/DefaultButton.svelte";
+  import Heading0 from "$lib/components/headings/Heading0.svelte";
+  import Heading1 from "$lib/components/headings/Heading1.svelte";
+  import DefaultParagraph from "$lib/components/paragraphs/DefaultParagraph.svelte";
 
+  let { data } = $props();
+</script>
+
+<div class="w-screen h-screen bg-dashboard-bg">
+    <div class="w-auto h-auto p-4 flex flex-col space-y-3 items-start ">
+        <Heading1 label="Question sets"/>
+        <DefaultParagraph label="You do not have any question sets yet. Add some?"/>
+        <DefaultButton label="Lavender Haze" textSize="md" />
+      </div>
+</div>
