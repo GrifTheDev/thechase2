@@ -1,6 +1,6 @@
 import { getDB } from "./initialize_firebase";
 import { doc, getDoc, updateDoc, addDoc, collection, setDoc } from "@firebase/firestore";
-import type { DBUsersType } from "$lib/types/database/users";
+import type { DBUsersType, DBUsersTypeWrite } from "$lib/types/database/users";
 import type { QuestionSetsType } from "$lib/types/database/question_sets";
 
 const { db } = getDB();
@@ -40,7 +40,7 @@ async function readUsersData(docID: string) {
   return (await readDocData("users", docID)) as DBUsersType | undefined;
 }
 
-async function updateUsersData(docID: string, data: DBUsersType) {
+async function updateUsersData(docID: string, data: DBUsersTypeWrite) {
   await updateDocData("users", docID, data);
 }
 
