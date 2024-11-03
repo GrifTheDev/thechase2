@@ -1,6 +1,8 @@
+import type { UserPermissionsType } from "../misc/user_permissions"
+
 interface AccessTokenType {
     name: string,
-    perms: string //TODO introduce later
+    permissions: UserPermissionsType
 }
 
 export type {AccessTokenType}

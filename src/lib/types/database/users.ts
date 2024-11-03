@@ -1,7 +1,4 @@
-// Even though a DB query for users must always return all of the interface properties, the "?"
-// has been added so that I can write to this collection without having to express all other
-// properties of the document.
-
+import type { UserPermissionsType } from "../misc/user_permissions"
 import type { RefreshTokenType } from "../tokens/refresh_token"
 
 interface DBUsersType {
@@ -11,7 +8,8 @@ interface DBUsersType {
     password: string,
     access_token: string, // this is the token that expires super quickly
     refresh_tokens: Array<RefreshTokenType>,
-    consumed_refresh_tokens: Array<RefreshTokenType>
+    consumed_refresh_tokens: Array<RefreshTokenType>,
+    permissions: UserPermissionsType
 }
 
 // TODO Look into rewriting with Partials?
@@ -23,6 +21,7 @@ interface DBUsersTypeWrite {
     password?: string,
     access_token?: string, // this is the token that expires super quickly
     refresh_tokens?: Array<RefreshTokenType>,
-    consumed_refresh_tokens?: Array<RefreshTokenType>
+    consumed_refresh_tokens?: Array<RefreshTokenType>,
+    permissions?: UserPermissionsType
 }
 export type {DBUsersType, DBUsersTypeWrite}
