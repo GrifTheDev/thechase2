@@ -25,7 +25,9 @@ async function createConstantSaltHash (data: string) {
     const hash = ((await pbkdf2Async(data, PRIVATE_CONSTANT_HASH_SALT, Number(PRIVATE_CONSTANT_HASH_SALT_ROUNDS), 12, "sha256")).toString("base64")).replaceAll("/", "")
     return hash
 }
-
+/**
+   * @description Function responsible for validating access and refresh tokens. SHOULD return a pair of (access_token, refresh_token) or a signal to clear all tokens because of a bad actor trying to use an old refresh/token
+   */
 async function prepareTokenPair(emailHash: string, dbData: DBUsersType) {
     let accessToken = dbData.access_token
     const refreshToken = await generateNewUserRefreshToken()
