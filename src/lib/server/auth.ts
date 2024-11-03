@@ -1,7 +1,7 @@
 //? Not sure how yet, but will probably move all auth logic here.
 //? After my mishap with classes, everything will be functions
 
-import { PRIVATE_CONSTANT_HASH_SALT, PRIVATE_CONSTANT_HASH_SALT_ROUNDS, PRIVATE_JWT_SECRET, PRIVATE_REFRESH_TOKEN_LIFETIME } from "$env/static/private"
+import { PRIVATE_ACCESS_TOKEN_LIFETIME, PRIVATE_CONSTANT_HASH_SALT, PRIVATE_CONSTANT_HASH_SALT_ROUNDS, PRIVATE_JWT_SECRET, PRIVATE_REFRESH_TOKEN_LIFETIME } from "$env/static/private"
 import type { DBUsersType } from "$lib/types/database/users";
 import crypto from "crypto"
 import { promisify } from "util"
@@ -26,30 +26,49 @@ async function createConstantSaltHash (data: string) {
     return hash
 }
 /**
-   * @description Function responsible for validating access and refresh tokens. SHOULD return a pair of (access_token, refresh_token) or a signal to clear all tokens because of a bad actor trying to use an old refresh/token
-   */
-async function prepareTokenPair(emailHash: string, dbData: DBUsersType) {
+   * @description Function responsible for validating ONLY STORED access and refresh tokens.
+   * @returns {(Array | undefined)} Returns an array where element `0` represents the access token & element `1` represents a refresh token. In case of failure or error returns undefined. 
+   */ 
+async function validateStoredUserTokens(emailHash: string, dbData: DBUsersType): Promise<[string, RefreshTokenType] | undefined>  {
     let accessToken = dbData.access_token
     const refreshToken = await generateNewUserRefreshToken()
     const currentTime = new Date().getTime()
     let refreshTokenObject: RefreshTokenType = {token: refreshToken, expiry: currentTime + Number(PRIVATE_REFRESH_TOKEN_LIFETIME)}
+
     try {
-        const access_token_data = jwt.verify(accessToken, PRIVATE_JWT_SECRET) 
+        jwt.verify(accessToken, PRIVATE_JWT_SECRET)
+        await updateUsersData(emailHash, {
+            refresh_tokens: [...dbData.refresh_tokens, refreshTokenObject],
+        })
+        return [accessToken, refreshTokenObject]
     } catch (error: any) {
-        //console.log(error)
+        // ! There exist two cases in which we can generate a new token pair, without being provided a refresh token: 
+        // ! Case 1 [error.toString().startsWith("JsonWebTokenError")]
         // * Stored token is somehow corrupted. Since the user HAS authenticated with their password,
         // * aka, we know the user is who they say they are, we can just gen and store a new token pair.
-        if (error.toString().startsWith("JsonWebTokenError")) {
-            const accessTokenPayload: AccessTokenType = {name: "Teo", perms: "question_sets.write"}
-            accessToken = jwt.sign(accessTokenPayload, PRIVATE_JWT_SECRET, { expiresIn: "5m" })
-            console.log(`[INFO] :: Detected JWT signature error. Created new token pair:\n (access_token, refresh_token) = (${accessToken}, ${JSON.stringify(refreshTokenObject)})`)
+
+        // ! Case 2 [error.toString().startsWith("TokenExpiredError")]
+        // * We are trying to give the user an expired token so we need to renew it. We do not have an access token, since this is the user logging in.
+        // * This is then, the one condition under which we will generate a new access token without a refresh token and return both.
+        if (error.toString().startsWith("JsonWebTokenError") || error.toString().startsWith("TokenExpiredError")) {
+            const accessTokenPayload: AccessTokenType = {name: "Teo", permissions: dbData.permissions}
+            accessToken = jwt.sign(accessTokenPayload, PRIVATE_JWT_SECRET, { expiresIn: PRIVATE_ACCESS_TOKEN_LIFETIME })
+            console.log(`[INFO] [user_auth 1] [${error.toString().split(':')[0]}]:: Detected JWT error on stored access_token. Created new token pair:\n (access_token, refresh_token) = (${accessToken}, ${JSON.stringify(refreshTokenObject)})`)
             await updateUsersData(emailHash, {
                 access_token: accessToken,
                 refresh_tokens: [...dbData.refresh_tokens, refreshTokenObject],
             })
-            // ! return the token pair
+            return [accessToken, refreshTokenObject]
+        } else {
+            console.log(error)
         }
+        
     }
 }
 
-export {generateNewUserRefreshToken, createConstantSaltHash, prepareTokenPair}
+// !IMplement
+async function renewAccessToken(accessToken: AccessTokenType, refershToken: RefreshTokenType, dbData: DBUsersType | undefined) {
+
+}
+
+export {generateNewUserRefreshToken, createConstantSaltHash, validateStoredUserTokens}

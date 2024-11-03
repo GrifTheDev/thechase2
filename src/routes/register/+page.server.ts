@@ -53,6 +53,7 @@ export const actions = {
     }
 
     await updateUsersData(emailHash, dataToInsert)
+    // @ts-ignore
     const JWTData: AccessTokenType = {name: name, perms: ""}
     const JWT = jwt.sign(JWTData, PRIVATE_JWT_SECRET, {expiresIn: "30d"})
 
