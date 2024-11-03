@@ -4,10 +4,10 @@ import bcrypt from "bcrypt";
 import { readUsersData, updateUsersData } from "$lib/database/database";
 import jwt from "jsonwebtoken"
 import { PRIVATE_JWT_SECRET, PRIVATE_PASSWORD_SALT_ROUNDS } from "$env/static/private";
-import type { AuthCookieType } from "$lib/types/tokens/access_token";
+import type { AccessTokenType } from "$lib/types/tokens/access_token";
 import type { PageServerLoad } from "./$types";
 import type { DBUsersType } from "$lib/types/database/users";
-import { createConstantSaltHash, generateNewUserToken } from "$lib/server/auth";
+import { createConstantSaltHash, generateNewUserRefreshToken } from "$lib/server/auth";
 
 export const load: PageServerLoad = async ({locals}) => {
     if (locals.user != undefined) throw redirect(303, "/app/dashboard")
@@ -42,17 +42,18 @@ export const actions = {
     if (await readUsersData(emailHash) != undefined) return { code: 409, message: "User already exists." };
     
     const passwordHash = await bcrypt.hash(password, Number(PRIVATE_PASSWORD_SALT_ROUNDS))
-    const token = await generateNewUserToken()
+    const token = await generateNewUserRefreshToken()
+    // @ts-ignore
     const dataToInsert: DBUsersType = {
       email: email,
       password: passwordHash,
       name: name,
       surname: surname,
-      token: token
+      access_token: token
     }
 
     await updateUsersData(emailHash, dataToInsert)
-    const JWTData: AuthCookieType = {name: name, token: token}
+    const JWTData: AccessTokenType = {name: name, perms: ""}
     const JWT = jwt.sign(JWTData, PRIVATE_JWT_SECRET, {expiresIn: "30d"})
 
     cookies.set("AuthorizationToken", `${JWT}`, {
