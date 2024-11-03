@@ -4,7 +4,7 @@ import bcrypt from "bcrypt";
 import { readUsersData, updateUsersData } from "$lib/database/database";
 import jwt from "jsonwebtoken"
 import { PRIVATE_JWT_SECRET, PRIVATE_PASSWORD_SALT_ROUNDS } from "$env/static/private";
-import type { AuthCookieType } from "$lib/types/misc/auth_cookie";
+import type { AuthCookieType } from "$lib/types/tokens/access_token";
 import type { PageServerLoad } from "./$types";
 import type { DBUsersType } from "$lib/types/database/users";
 import { createConstantSaltHash, generateNewUserToken } from "$lib/server/auth";
