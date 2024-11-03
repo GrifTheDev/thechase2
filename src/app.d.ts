@@ -1,6 +1,6 @@
 
 
-import type { AuthCookieType } from "$lib/types/misc/auth_cookie";
+import type { AuthCookieType } from "$lib/types/tokens/access_token";
 
 // See https://kit.svelte.dev/docs/types#app
 // for information about these interfaces

@@ -1,5 +1,5 @@
 import { readUsersData } from "$lib/database/database";
-import { createConstantSaltHash } from "$lib/server/auth";
+import { createConstantSaltHash, prepareTokenPair } from "$lib/server/auth";
 import type { RequestHandler } from "./$types";
 import { json } from "@sveltejs/kit";
 import bcrypt from "bcrypt";
@@ -17,7 +17,7 @@ export const POST: RequestHandler = async ({ request, locals, cookies }) => {
   const userAuthenticated = await bcrypt.compare(password, storedPasswordHash);
 
   if (userAuthenticated) {
-
+    await prepareTokenPair(emailHash, dbData)
   } else {
     return json({code: 401, message: "Invalid username/password."})
   }
