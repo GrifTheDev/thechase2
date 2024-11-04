@@ -3,8 +3,7 @@ import { createHash } from "crypto";
 import bcrypt from "bcrypt";
 import { readUsersData } from "$lib/database/database";
 import jwt from "jsonwebtoken"
-import { PRIVATE_JWT_SECRET } from "$env/static/private";
-import type { AccessTokenType } from "$lib/types/tokens/access_token";
+import type { AccessTokenPayloadType } from "$lib/types/tokens/access_token";
 import type { PageServerLoad } from "./$types";
 import { createConstantSaltHash } from "$lib/server/auth";
 

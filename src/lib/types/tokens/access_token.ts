@@ -1,9 +1,9 @@
 import type { UserPermissionsType } from "../misc/user_permissions"
 
-interface AccessTokenType {
+interface AccessTokenPayloadType {
     name: string,
     permissions: UserPermissionsType,
     salt: string
 }
 
-export type {AccessTokenType}
+export type {AccessTokenPayloadType}

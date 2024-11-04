@@ -1,7 +1,7 @@
 //? Not sure how yet, but will probably move all auth logic here.
 //? After my mishap with classes, everything will be functions
 
-import { PRIVATE_ACCESS_TOKEN_LIFETIME, PRIVATE_CONSTANT_HASH_SALT, PRIVATE_CONSTANT_HASH_SALT_ROUNDS, PRIVATE_JWT_SECRET, PRIVATE_REFRESH_TOKEN_LIFETIME } from "$env/static/private"
+import { PRIVATE_ACCESS_TOKEN_LIFETIME, PRIVATE_CONSTANT_HASH_SALT, PRIVATE_CONSTANT_HASH_SALT_ROUNDS, PRIVATE_JWT_ACCESS_TOKEN_SECRET, PRIVATE_JWT_REFRESH_TOKEN_SECRET, PRIVATE_REFRESH_TOKEN_LIFETIME } from "$env/static/private"
 import type { DBUsersType } from "$lib/types/database/users";
 import crypto from "crypto"
 import { promisify } from "util"
@@ -34,10 +34,10 @@ async function createConstantSaltHash (data: string) {
    */ 
 async function validateStoredUserTokens(emailHash: string, dbData: DBUsersType): Promise<{accessToken: string, refreshToken: string} | undefined>  {
     let accessToken = dbData.access_token
-    const refreshToken = jwt.sign({salt: generateRandomBase64String(64)}, PRIVATE_JWT_SECRET, { expiresIn: PRIVATE_REFRESH_TOKEN_LIFETIME })
+    const refreshToken = jwt.sign({salt: generateRandomBase64String(64)}, PRIVATE_JWT_REFRESH_TOKEN_SECRET, { expiresIn: PRIVATE_REFRESH_TOKEN_LIFETIME })
 
     try {
-        jwt.verify(accessToken, PRIVATE_JWT_SECRET)
+        jwt.verify(accessToken, PRIVATE_JWT_ACCESS_TOKEN_SECRET)
         await updateUsersData(emailHash, {
             refresh_tokens: [...dbData.refresh_tokens, refreshToken],
         })
@@ -53,7 +53,7 @@ async function validateStoredUserTokens(emailHash: string, dbData: DBUsersType):
         // * This is then, the one condition under which we will generate a new access token without a refresh token and return both.
         if (error.toString().startsWith("JsonWebTokenError") || error.toString().startsWith("TokenExpiredError")) {
             const accessTokenPayload: AccessTokenPayloadType = {name: "Teo", permissions: dbData.permissions, salt: generateRandomBase64String(16)}
-            accessToken = jwt.sign(accessTokenPayload, PRIVATE_JWT_SECRET, { expiresIn: PRIVATE_ACCESS_TOKEN_LIFETIME })
+            accessToken = jwt.sign(accessTokenPayload, PRIVATE_JWT_ACCESS_TOKEN_SECRET, { expiresIn: PRIVATE_ACCESS_TOKEN_LIFETIME })
             console.log(`[INFO] [user_auth 1] [${error.toString().split(':')[0]}]:: Detected JWT error on stored access_token. Created new token pair:\n (access_token, refresh_token) = (${accessToken}, ${refreshToken})`)
             await updateUsersData(emailHash, {
                 access_token: accessToken,
