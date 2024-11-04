@@ -1,10 +1,13 @@
 import { readUsersData } from "$lib/database/database";
-import { createConstantSaltHash, validateStoredUserTokens } from "$lib/server/auth";
+import {
+  createConstantSaltHash,
+  validateStoredUserTokens,
+} from "$lib/server/auth";
 import type { RequestHandler } from "./$types";
 import { json } from "@sveltejs/kit";
 import bcrypt from "bcrypt";
 
-export const POST: RequestHandler = async ({ request, locals, cookies }) => {
+export const POST: RequestHandler = async ({ request, cookies }) => {
   const { email, password } = await request.json();
 
   const emailHash = await createConstantSaltHash(email);
@@ -17,10 +20,28 @@ export const POST: RequestHandler = async ({ request, locals, cookies }) => {
   const userAuthenticated = await bcrypt.compare(password, storedPasswordHash);
 
   if (userAuthenticated) {
-    const tokenPair = await validateStoredUserTokens(emailHash, dbData)
-    console.log(tokenPair)
+    const tokenPair = await validateStoredUserTokens(emailHash, dbData);
+    console.log(tokenPair);
+
+    if (tokenPair == undefined)
+      return json({
+        code: 500,
+        message: "An unexpected internal error happened. Sorry!",
+      });
+    cookies.set("AccessToken", tokenPair.accessToken, {
+      secure: true,
+      path: "/",
+      sameSite: "strict",
+      maxAge: 60 * 5,
+    });
+    cookies.set("RefreshToken", tokenPair.refreshToken.token, {
+      secure: true,
+      path: "/",
+      sameSite: "strict",
+      maxAge: 604800,
+    });
   } else {
-    return json({code: 401, message: "Invalid username/password."})
+    return json({ code: 401, message: "Invalid username/password." });
   }
 
   return json({ code: 200, message: `${email} ${password}` });
