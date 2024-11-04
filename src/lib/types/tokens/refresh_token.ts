@@ -1,6 +1,5 @@
-interface RefreshTokenType {
-    token: string,
-    expiry: number
+interface RefreshTokenPayloadType {
+    salt: string
 }
 
-export type {RefreshTokenType}
+export type {RefreshTokenPayloadType}

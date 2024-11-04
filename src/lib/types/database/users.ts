@@ -1,5 +1,4 @@
 import type { UserPermissionsType } from "../misc/user_permissions"
-import type { RefreshTokenType } from "../tokens/refresh_token"
 
 interface DBUsersType {
     name: string,
@@ -7,8 +6,8 @@ interface DBUsersType {
     email: string,
     password: string,
     access_token: string, // this is the token that expires super quickly
-    refresh_tokens: Array<RefreshTokenType>,
-    consumed_refresh_tokens: Array<RefreshTokenType>,
+    refresh_tokens: Array<string>,
+    consumed_refresh_tokens: Array<string>,
     permissions: UserPermissionsType
 }
 
@@ -20,8 +19,8 @@ interface DBUsersTypeWrite {
     email?: string,
     password?: string,
     access_token?: string, // this is the token that expires super quickly
-    refresh_tokens?: Array<RefreshTokenType>,
-    consumed_refresh_tokens?: Array<RefreshTokenType>,
+    refresh_tokens?: Array<string>,
+    consumed_refresh_tokens?: Array<string>,
     permissions?: UserPermissionsType
 }
 export type {DBUsersType, DBUsersTypeWrite}
