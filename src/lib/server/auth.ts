@@ -14,6 +14,10 @@ import { updateUsersData } from "$lib/database/database";
 async function generateNewUserRefreshToken(): Promise<string> {
     return crypto.randomBytes(21).toString("base64")
 }
+
+function generateRandomBase64String(lengthBytes: number): string {
+    return crypto.randomBytes(lengthBytes).toString("base64")
+}
 // To protect against brute-force attacks, I am using a constant hidden salt to hash email addresses as keys.
 /**
    * @description Use this whenever you want to hash something with `sha256`.
@@ -27,9 +31,8 @@ async function createConstantSaltHash (data: string) {
 }
 /**
    * @description Function responsible for validating ONLY STORED access and refresh tokens.
-   * @returns {(Array | undefined)} Returns an array where element `0` represents the access token & element `1` represents a refresh token. In case of failure or error returns undefined. 
    */ 
-async function validateStoredUserTokens(emailHash: string, dbData: DBUsersType): Promise<[string, RefreshTokenType] | undefined>  {
+async function validateStoredUserTokens(emailHash: string, dbData: DBUsersType): Promise<{accessToken: string, refreshToken: RefreshTokenType} | undefined>  {
     let accessToken = dbData.access_token
     const refreshToken = await generateNewUserRefreshToken()
     const currentTime = new Date().getTime()
@@ -40,7 +43,7 @@ async function validateStoredUserTokens(emailHash: string, dbData: DBUsersType):
         await updateUsersData(emailHash, {
             refresh_tokens: [...dbData.refresh_tokens, refreshTokenObject],
         })
-        return [accessToken, refreshTokenObject]
+        return {accessToken: accessToken, refreshToken: refreshTokenObject}
     } catch (error: any) {
         // ! There exist two cases in which we can generate a new token pair, without being provided a refresh token: 
         // ! Case 1 [error.toString().startsWith("JsonWebTokenError")]
@@ -51,14 +54,14 @@ async function validateStoredUserTokens(emailHash: string, dbData: DBUsersType):
         // * We are trying to give the user an expired token so we need to renew it. We do not have an access token, since this is the user logging in.
         // * This is then, the one condition under which we will generate a new access token without a refresh token and return both.
         if (error.toString().startsWith("JsonWebTokenError") || error.toString().startsWith("TokenExpiredError")) {
-            const accessTokenPayload: AccessTokenType = {name: "Teo", permissions: dbData.permissions}
+            const accessTokenPayload: AccessTokenType = {name: "Teo", permissions: dbData.permissions, salt: generateRandomBase64String(16)}
             accessToken = jwt.sign(accessTokenPayload, PRIVATE_JWT_SECRET, { expiresIn: PRIVATE_ACCESS_TOKEN_LIFETIME })
             console.log(`[INFO] [user_auth 1] [${error.toString().split(':')[0]}]:: Detected JWT error on stored access_token. Created new token pair:\n (access_token, refresh_token) = (${accessToken}, ${JSON.stringify(refreshTokenObject)})`)
             await updateUsersData(emailHash, {
                 access_token: accessToken,
                 refresh_tokens: [...dbData.refresh_tokens, refreshTokenObject],
             })
-            return [accessToken, refreshTokenObject]
+            return {accessToken: accessToken, refreshToken: refreshTokenObject}
         } else {
             console.log(error)
         }

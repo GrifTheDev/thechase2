@@ -18,7 +18,7 @@ export const POST: RequestHandler = async ({ request, locals, cookies }) => {
 
   if (userAuthenticated) {
     const tokenPair = await validateStoredUserTokens(emailHash, dbData)
-
+    console.log(tokenPair)
   } else {
     return json({code: 401, message: "Invalid username/password."})
   }
