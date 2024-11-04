@@ -21,7 +21,6 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
   if (userAuthenticated) {
     const tokenPair = await validateStoredUserTokens(emailHash, dbData);
-    console.log(tokenPair);
 
     if (tokenPair == undefined)
       return json({

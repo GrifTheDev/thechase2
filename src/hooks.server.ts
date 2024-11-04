@@ -1,9 +1,13 @@
-import { PRIVATE_JWT_SECRET } from "$env/static/private";
-import type { AccessTokenType } from "$lib/types/tokens/access_token";
+import {
+  PRIVATE_JWT_REFRESH_TOKEN_SECRET,
+  PRIVATE_REFRESH_TOKEN_LIFETIME,
+} from "$env/static/private";
+import { updateUsersData } from "$lib/database/database";
+import type { AccessTokenPayloadType } from "$lib/types/tokens/access_token";
 import { redirect, type Handle } from "@sveltejs/kit";
 import jwt from "jsonwebtoken";
 
-export const handle = (async ({ event, resolve }) => {
+/* export const handle = (async ({ event, resolve }) => {
   const token = event.cookies.get("AuthorizationToken");
   const isProtectedAppRoute = event.url.pathname.split('/').includes("app")
   
@@ -29,4 +33,33 @@ export const handle = (async ({ event, resolve }) => {
   }
 
   return await resolve(event);
-}) satisfies Handle; 
+}) satisfies Handle;  */
+// ? 3. Verify access token with JWT and expiry on refresh token
+// ? 4. If access token expired, consume refresh token and gen a new pair
+// ? 5. If refresh token is in the consumed_refresh_tokens array in the DB, invalidate all tokens.
+export const handle = (async ({ event, resolve }) => {
+  const route = event.url.pathname;
+  const regex = /\/+/g;
+  let sanitizedRoute = route.replaceAll(regex, "/");
+
+  // ? Change this so that protected routes can be read from an array
+  if (sanitizedRoute.startsWith("/app")) {
+    const accessToken = event.cookies.get("AccessToken");
+    const refreshToken = event.cookies.get("RefreshToken");
+
+    if (accessToken == undefined || refreshToken == undefined)
+      throw redirect(303, "/login");
+    // * Check if refresh token expired or is somehow broken first. If so, purge DB and cookies and return to login/
+    // * We don't care for the specific reason, but if the try fails, aka goes to catch, we just want to delete everything and throw to /login
+    try {
+      jwt.verify(refreshToken, PRIVATE_JWT_REFRESH_TOKEN_SECRET);
+    } catch (error) {
+      //await updateUsersData()
+
+    }
+
+    console.log(accessToken, refreshToken);
+  }
+
+  return await resolve(event);
+}) satisfies Handle;
