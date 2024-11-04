@@ -28,21 +28,21 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
         code: 500,
         message: "An unexpected internal error happened. Sorry!",
       });
+
+    // * Both these cookies do not have maxAges so that we can check them in middleware.
     cookies.set("AccessToken", tokenPair.accessToken, {
       secure: true,
       path: "/",
       sameSite: "strict",
-      maxAge: 60 * 5,
     });
-    cookies.set("RefreshToken", tokenPair.refreshToken.token, {
+    cookies.set("RefreshToken", tokenPair.refreshToken, {
       secure: true,
       path: "/",
       sameSite: "strict",
-      maxAge: 604800,
     });
+    // TODO, handle success client side
+    return json({code: 200, message: "OK"})
   } else {
     return json({ code: 401, message: "Invalid username/password." });
   }
-
-  return json({ code: 200, message: `${email} ${password}` });
 };

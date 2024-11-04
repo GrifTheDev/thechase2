@@ -6,8 +6,8 @@ import type { DBUsersType } from "$lib/types/database/users";
 import crypto from "crypto"
 import { promisify } from "util"
 import jwt from "jsonwebtoken"
-import type { AccessTokenType } from "$lib/types/tokens/access_token";
-import type { RefreshTokenType } from "$lib/types/tokens/refresh_token";
+import type { AccessTokenPayloadType } from "$lib/types/tokens/access_token";
+import type { RefreshTokenPayloadType } from "$lib/types/tokens/refresh_token";
 import { updateUsersData } from "$lib/database/database";
 
 // 28 character long refresh token
@@ -30,20 +30,18 @@ async function createConstantSaltHash (data: string) {
     return hash
 }
 /**
-   * @description Function responsible for validating ONLY STORED access and refresh tokens.
+   * @description Function responsible for validating ONLY STORED access and refresh tokens. Called only on LOGIN.
    */ 
-async function validateStoredUserTokens(emailHash: string, dbData: DBUsersType): Promise<{accessToken: string, refreshToken: RefreshTokenType} | undefined>  {
+async function validateStoredUserTokens(emailHash: string, dbData: DBUsersType): Promise<{accessToken: string, refreshToken: string} | undefined>  {
     let accessToken = dbData.access_token
-    const refreshToken = await generateNewUserRefreshToken()
-    const currentTime = new Date().getTime()
-    let refreshTokenObject: RefreshTokenType = {token: refreshToken, expiry: currentTime + Number(PRIVATE_REFRESH_TOKEN_LIFETIME)}
+    const refreshToken = jwt.sign({salt: generateRandomBase64String(64)}, PRIVATE_JWT_SECRET, { expiresIn: PRIVATE_REFRESH_TOKEN_LIFETIME })
 
     try {
         jwt.verify(accessToken, PRIVATE_JWT_SECRET)
         await updateUsersData(emailHash, {
-            refresh_tokens: [...dbData.refresh_tokens, refreshTokenObject],
+            refresh_tokens: [...dbData.refresh_tokens, refreshToken],
         })
-        return {accessToken: accessToken, refreshToken: refreshTokenObject}
+        return {accessToken: accessToken, refreshToken: refreshToken}
     } catch (error: any) {
         // ! There exist two cases in which we can generate a new token pair, without being provided a refresh token: 
         // ! Case 1 [error.toString().startsWith("JsonWebTokenError")]
@@ -54,14 +52,14 @@ async function validateStoredUserTokens(emailHash: string, dbData: DBUsersType):
         // * We are trying to give the user an expired token so we need to renew it. We do not have an access token, since this is the user logging in.
         // * This is then, the one condition under which we will generate a new access token without a refresh token and return both.
         if (error.toString().startsWith("JsonWebTokenError") || error.toString().startsWith("TokenExpiredError")) {
-            const accessTokenPayload: AccessTokenType = {name: "Teo", permissions: dbData.permissions, salt: generateRandomBase64String(16)}
+            const accessTokenPayload: AccessTokenPayloadType = {name: "Teo", permissions: dbData.permissions, salt: generateRandomBase64String(16)}
             accessToken = jwt.sign(accessTokenPayload, PRIVATE_JWT_SECRET, { expiresIn: PRIVATE_ACCESS_TOKEN_LIFETIME })
-            console.log(`[INFO] [user_auth 1] [${error.toString().split(':')[0]}]:: Detected JWT error on stored access_token. Created new token pair:\n (access_token, refresh_token) = (${accessToken}, ${JSON.stringify(refreshTokenObject)})`)
+            console.log(`[INFO] [user_auth 1] [${error.toString().split(':')[0]}]:: Detected JWT error on stored access_token. Created new token pair:\n (access_token, refresh_token) = (${accessToken}, ${refreshToken})`)
             await updateUsersData(emailHash, {
                 access_token: accessToken,
-                refresh_tokens: [...dbData.refresh_tokens, refreshTokenObject],
+                refresh_tokens: [...dbData.refresh_tokens, refreshToken],
             })
-            return {accessToken: accessToken, refreshToken: refreshTokenObject}
+            return {accessToken: accessToken, refreshToken: refreshToken}
         } else {
             console.log(error)
         }
@@ -70,7 +68,7 @@ async function validateStoredUserTokens(emailHash: string, dbData: DBUsersType):
 }
 
 // !IMplement
-async function renewAccessToken(accessToken: AccessTokenType, refershToken: RefreshTokenType, dbData: DBUsersType | undefined) {
+async function renewAccessToken(accessToken: AccessTokenPayloadType, refershToken: RefreshTokenPayloadType, dbData: DBUsersType | undefined) {
 
 }
 
