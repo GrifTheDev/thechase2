@@ -2,7 +2,7 @@ import {
   PRIVATE_JWT_REFRESH_TOKEN_SECRET,
   PRIVATE_REFRESH_TOKEN_LIFETIME,
 } from "$env/static/private";
-import { updateUsersData } from "$lib/database/database";
+import { queryWhereUsersData, updateUsersData } from "$lib/database/database";
 import type { AccessTokenPayloadType } from "$lib/types/tokens/access_token";
 import { redirect, type Handle } from "@sveltejs/kit";
 import jwt from "jsonwebtoken";
@@ -43,22 +43,56 @@ export const handle = (async ({ event, resolve }) => {
   let sanitizedRoute = route.replaceAll(regex, "/");
 
   // ? Change this so that protected routes can be read from an array
-  if (sanitizedRoute.startsWith("/app")) {
+  // !! CHANGE TO /APP ONCE DONE
+  if (sanitizedRoute.startsWith("/test")) {
     const accessToken = event.cookies.get("AccessToken");
     const refreshToken = event.cookies.get("RefreshToken");
 
     if (accessToken == undefined || refreshToken == undefined)
       throw redirect(303, "/login");
+
     // * Check if refresh token expired or is somehow broken first. If so, purge DB and cookies and return to login/
     // * We don't care for the specific reason, but if the try fails, aka goes to catch, we just want to delete everything and throw to /login
     try {
       jwt.verify(refreshToken, PRIVATE_JWT_REFRESH_TOKEN_SECRET);
     } catch (error) {
-      //await updateUsersData()
+      console.log(error);
+      const querySnapshot = await queryWhereUsersData(
+        "access_token",
+        accessToken,
+        "=="
+      );
 
+      // * This should never trigger. There should only ever be one document with an access token in the DB.
+      if (querySnapshot?.size != 1)
+        console.log(
+          `detected multiple documents with the same auth token???\n`,
+          querySnapshot?.docs
+        );
+
+      querySnapshot?.forEach(async (doc) => {
+        let refreshTokenArray: Array<string> = doc.get("refresh_tokens");
+        let consumedRefreshTokens: Array<string> = doc.get(
+          "consumed_refresh_tokens"
+        );
+        let consumedToken: Array<string> = refreshTokenArray.splice(
+          refreshTokenArray.indexOf(refreshToken),
+          1
+        );
+
+        //console.log(refreshTokenArray, consumedToken);
+        await updateUsersData(doc.id, {
+          access_token: "",
+          refresh_tokens: refreshTokenArray,
+          consumed_refresh_tokens: [...consumedRefreshTokens, ...consumedToken],
+        });
+      });
+      event.cookies.delete(accessToken, { path: "/" });
+      event.cookies.delete(refreshToken, { path: "/" });
+      throw redirect(303, "/login")
     }
 
-    console.log(accessToken, refreshToken);
+    //console.log(accessToken, refreshToken);
   }
 
   return await resolve(event);
