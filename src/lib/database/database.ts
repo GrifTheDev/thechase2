@@ -1,5 +1,5 @@
 import { getDB } from "./initialize_firebase";
-import { doc, getDoc, updateDoc, addDoc, collection, setDoc } from "@firebase/firestore";
+import { doc, getDoc, collection, setDoc, query, where, type WhereFilterOp, getDocs, type DocumentData, QuerySnapshot } from "@firebase/firestore";
 import type { DBUsersType, DBUsersTypeWrite } from "$lib/types/database/users";
 import type { QuestionSetsType } from "$lib/types/database/question_sets";
 
@@ -36,12 +36,29 @@ async function updateDocData(collection: string, docID: string, toWrite: any) {
     return docData; 
 }
 
+/**
+   * @description Use this ONLY when you cannot use a predefined function for a DB query.
+   * @private
+   */
+
+// TODO ADD createdAt
+async function queryWhere(collectionName: string, field: string, value: string, operator: WhereFilterOp) {
+  const collectionRef = collection(db, collectionName)
+  const q = query(collectionRef, where(field, operator, value))
+  const querySnapshot = await getDocs(q)
+  return querySnapshot
+}
+
 async function readUsersData(docID: string) {
   return (await readDocData("users", docID)) as DBUsersType | undefined;
 }
 
 async function updateUsersData(docID: string, data: DBUsersTypeWrite) {
   await updateDocData("users", docID, data);
+}
+
+async function queryWhereUsersData(field: string, value: string, operator: WhereFilterOp) {
+  return await queryWhere("users", field, value, operator) as QuerySnapshot<DBUsersType> | undefined
 }
 
 async function readQuestionSetsData(docID: string) {
@@ -52,4 +69,4 @@ async function updateQuestionSetsData(docID: string, data: QuestionSetsType) {
   await updateDocData("question_sets", docID, data);
 }
 
-export { readDocData, readUsersData, updateDocData, updateUsersData, readQuestionSetsData, updateQuestionSetsData };
+export { readDocData, readUsersData, updateDocData, updateUsersData, readQuestionSetsData, updateQuestionSetsData, queryWhereUsersData };
