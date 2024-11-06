@@ -3,6 +3,7 @@ import {
   PRIVATE_REFRESH_TOKEN_LIFETIME,
 } from "$env/static/private";
 import { queryWhereUsersData, updateUsersData } from "$lib/database/database";
+import { invalidateSpecificUserTokenPair } from "$lib/server/auth";
 import type { AccessTokenPayloadType } from "$lib/types/tokens/access_token";
 import { redirect, type Handle } from "@sveltejs/kit";
 import jwt from "jsonwebtoken";
@@ -57,36 +58,8 @@ export const handle = (async ({ event, resolve }) => {
       jwt.verify(refreshToken, PRIVATE_JWT_REFRESH_TOKEN_SECRET);
     } catch (error) {
       console.log(error);
-      const querySnapshot = await queryWhereUsersData(
-        "access_token",
-        accessToken,
-        "=="
-      );
-
-      // * This should never trigger. There should only ever be one document with an access token in the DB.
-      if (querySnapshot?.size != 1)
-        console.log(
-          `detected multiple documents with the same auth token???\n`,
-          querySnapshot?.docs
-        );
-
-      querySnapshot?.forEach(async (doc) => {
-        let refreshTokenArray: Array<string> = doc.get("refresh_tokens");
-        let consumedRefreshTokens: Array<string> = doc.get(
-          "consumed_refresh_tokens"
-        );
-        let consumedToken: Array<string> = refreshTokenArray.splice(
-          refreshTokenArray.indexOf(refreshToken),
-          1
-        );
-
-        //console.log(refreshTokenArray, consumedToken);
-        await updateUsersData(doc.id, {
-          access_token: "",
-          refresh_tokens: refreshTokenArray,
-          consumed_refresh_tokens: [...consumedRefreshTokens, ...consumedToken],
-        });
-      });
+      
+      await invalidateSpecificUserTokenPair(accessToken, refreshToken)
       event.cookies.delete(accessToken, { path: "/" });
       event.cookies.delete(refreshToken, { path: "/" });
       throw redirect(303, "/login")
