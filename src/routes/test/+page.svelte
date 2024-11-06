@@ -10,15 +10,15 @@
     //const userInfo = jwt.verify("asd", "asdsadasd")
     const { db } = getDB();
     const cRef = collection(db, "users")
-    const q = query(cRef, where("access_token", "==", "asdasd"))
+    const q = query(cRef, where("access_token", "==", ""))
 
     const querySnapshot = await getDocs(q)
-    console.log(querySnapshot.size)
+    console.log(querySnapshot.docs[0].data())
+    content = JSON.stringify(querySnapshot.docs[0].data())
+    /* console.log(querySnapshot.size)
     querySnapshot.forEach((doc) => {
       content = JSON.stringify(doc.data());
-    })
-    //@ts-ignore
-     q
+    }) */
   }
 
   

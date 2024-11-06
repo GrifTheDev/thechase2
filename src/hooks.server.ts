@@ -4,7 +4,10 @@ import {
   PRIVATE_REFRESH_TOKEN_LIFETIME,
 } from "$env/static/private";
 import { queryWhereUsersData, updateUsersData } from "$lib/database/database";
-import { invalidateSpecificUserTokenPair } from "$lib/server/auth/auth";
+import {
+  invalidateSpecificUserTokenPair,
+  requestNewTokenPair,
+} from "$lib/server/auth/auth";
 import type { AccessTokenPayloadType } from "$lib/types/tokens/access_token";
 import { redirect, type Handle } from "@sveltejs/kit";
 import jwt from "jsonwebtoken";
@@ -55,25 +58,36 @@ export const handle = (async ({ event, resolve }) => {
 
     // * Check if refresh token expired or is somehow broken first. If so, purge DB and cookies and return to login/
     // * We don't care for the specific reason, but if the try fails, aka goes to catch, we just want to delete everything and throw to /login
+    
+    // TODO If the token expired, remove just that token from the array, if the error is something else, delete everything
     try {
       jwt.verify(refreshToken, PRIVATE_JWT_REFRESH_TOKEN_SECRET);
     } catch (error) {
       console.log(error);
 
-      await invalidateSpecificUserTokenPair(accessToken, refreshToken)
+      await invalidateSpecificUserTokenPair(accessToken, refreshToken);
       event.cookies.delete(accessToken, { path: "/" });
       event.cookies.delete(refreshToken, { path: "/" });
-      throw redirect(303, "/login")
+      throw redirect(303, "/login");
     }
 
     // * If access token cannot be verified, this could be due to expiry. Unlike the refresh token, if an access token expires we need to request a new one.
     // * If we receive some other error, like malformed token, we clear everything.
     try {
-      jwt.verify(accessToken, PRIVATE_JWT_ACCESS_TOKEN_SECRET)
-    } catch (error:any) {
+      jwt.verify(accessToken, PRIVATE_JWT_ACCESS_TOKEN_SECRET);
+    } catch (error: any) {
+      console.log("hit")
       // * Token has expired. Let's grab a new one!
       if (error.toString().startsWith("TokenExpiredError")) {
-
+        const requestPair = await requestNewTokenPair(
+          accessToken,
+          refreshToken
+        );
+        if (requestPair == "danger") {
+          event.cookies.delete(accessToken, { path: "/" });
+          event.cookies.delete(refreshToken, { path: "/" });
+          throw redirect(303, "/login");
+        }
       }
     }
 

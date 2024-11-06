@@ -22,3 +22,4 @@ vite.config.ts.timestamp-*
 
 # SHH
 src/lib/database/spec.md
+src/lib/server/auth/spec.md

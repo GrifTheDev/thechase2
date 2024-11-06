@@ -71,26 +71,71 @@ async function invalidateSpecificUserTokenPair(
 
   querySnapshot?.forEach(async (doc) => {
     let refreshTokenArray: Array<string> = doc.get("refresh_tokens");
-    let consumedRefreshTokens: Array<string> = doc.get(
-      "consumed_refresh_tokens"
-    );
-    let consumedToken: Array<string> = refreshTokenArray.splice(
-      refreshTokenArray.indexOf(refreshToken),
-      1
-    );
+    const oldTokenIndex = refreshTokenArray.indexOf(refreshToken)
 
-    await updateUsersData(doc.id, {
-      access_token: "",
-      refresh_tokens: refreshTokenArray,
-      consumed_refresh_tokens: [...consumedRefreshTokens, ...consumedToken],
-    });
+    if (oldTokenIndex != -1) {
+      let consumedRefreshTokens: Array<string> = doc.get(
+        "consumed_refresh_tokens"
+      );
+      let consumedToken: Array<string> = refreshTokenArray.splice(
+        refreshTokenArray.indexOf(refreshToken),
+        1
+      );
+      await updateUsersData(doc.id, {
+        access_token: "",
+        refresh_tokens: refreshTokenArray,
+        consumed_refresh_tokens: [...consumedRefreshTokens, ...consumedToken],
+      });
+    } else {
+      await updateUsersData(doc.id, {
+        access_token: "",
+      });
+    }
+    
+
+    
   });
 }
 
+// * 0. Since hooks checks the refresh token first, we know that at this point we will get a valid refresh token.
+// *    We also know the access token is valid, since it returned the Expired error. TLDR; we have a working token pair
+//*     But just the access token is expired.
+
+// ? 2. Check if the refresh token provided is in the used tokens - if so, call invalidateSpecificUserTokenPair and return "danger"
+// ? 3. At this point we've verified that both tokens and are ready to start the process. We generate a new access token & a new refresh token
+// ?    We can call the invalidate specific user token pair and then add the new token pair and return it.
+// ? 4. Declare better return types
 async function requestNewTokenPair(
   accessToken: string,
   refreshToken: string
-): Promise<AuthTokenPairType | undefined> {
+): Promise<AuthTokenPairType | undefined | "danger"> {
+  const querySnapshot = await queryWhereUsersData(
+    "access_token",
+    accessToken,
+    "=="
+  );
+
+  // * I am 90% confident this will never trigger.
+  if (querySnapshot?.size != 1)
+    console.log(
+      `detected multiple documents with the same auth token???\n`,
+      querySnapshot?.docs
+    );
+
+  if (querySnapshot == undefined) return undefined
+
+  const docData =  querySnapshot.docs[0].data()
+  const consumedRefreshTokens = docData.consumed_refresh_tokens
+
+  // TODO expand on the invalidation function, the below should clear all refresh tokens.
+  if (consumedRefreshTokens.includes(refreshToken)) {
+    console.log(`[DANGER] [AUTH] :: An attempt is being made to use a consumed refresh token to aquire a new access token. Dump:\n ${docData}`)
+    await invalidateSpecificUserTokenPair(accessToken, refreshToken)
+    return "danger"
+  } else {
+    // all good!
+  }
+
   return undefined;
 }
 
