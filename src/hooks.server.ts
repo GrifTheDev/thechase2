@@ -1,9 +1,10 @@
 import {
+  PRIVATE_JWT_ACCESS_TOKEN_SECRET,
   PRIVATE_JWT_REFRESH_TOKEN_SECRET,
   PRIVATE_REFRESH_TOKEN_LIFETIME,
 } from "$env/static/private";
 import { queryWhereUsersData, updateUsersData } from "$lib/database/database";
-import { invalidateSpecificUserTokenPair } from "$lib/server/auth";
+import { invalidateSpecificUserTokenPair } from "$lib/server/auth/auth";
 import type { AccessTokenPayloadType } from "$lib/types/tokens/access_token";
 import { redirect, type Handle } from "@sveltejs/kit";
 import jwt from "jsonwebtoken";
@@ -58,11 +59,22 @@ export const handle = (async ({ event, resolve }) => {
       jwt.verify(refreshToken, PRIVATE_JWT_REFRESH_TOKEN_SECRET);
     } catch (error) {
       console.log(error);
-      
+
       await invalidateSpecificUserTokenPair(accessToken, refreshToken)
       event.cookies.delete(accessToken, { path: "/" });
       event.cookies.delete(refreshToken, { path: "/" });
       throw redirect(303, "/login")
+    }
+
+    // * If access token cannot be verified, this could be due to expiry. Unlike the refresh token, if an access token expires we need to request a new one.
+    // * If we receive some other error, like malformed token, we clear everything.
+    try {
+      jwt.verify(accessToken, PRIVATE_JWT_ACCESS_TOKEN_SECRET)
+    } catch (error:any) {
+      // * Token has expired. Let's grab a new one!
+      if (error.toString().startsWith("TokenExpiredError")) {
+
+      }
     }
 
     //console.log(accessToken, refreshToken);

@@ -5,7 +5,6 @@ import { readUsersData } from "$lib/database/database";
 import jwt from "jsonwebtoken"
 import type { AccessTokenPayloadType } from "$lib/types/tokens/access_token";
 import type { PageServerLoad } from "./$types";
-import { createConstantSaltHash } from "$lib/server/auth";
 
 export const load: PageServerLoad = async ({locals, url}) => {
     //console.log(locals.user)

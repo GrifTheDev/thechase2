@@ -1,8 +1,8 @@
 import { readUsersData } from "$lib/database/database";
 import {
-  createConstantSaltHash,
   validateStoredUserTokens,
-} from "$lib/server/auth";
+} from "$lib/server/auth/auth";
+import { createConstantSaltHash } from "$lib/server/auth/utilities";
 import type { RequestHandler } from "./$types";
 import { json } from "@sveltejs/kit";
 import bcrypt from "bcrypt";

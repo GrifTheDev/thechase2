@@ -1,13 +1,13 @@
-import { redirect, type Actions, error } from "@sveltejs/kit";
+/* import { redirect, type Actions, error } from "@sveltejs/kit";
 import { createHash } from "crypto";
 import bcrypt from "bcrypt";
 import { readUsersData, updateUsersData } from "$lib/database/database";
 import jwt from "jsonwebtoken"
-import { PRIVATE_JWT_SECRET, PRIVATE_PASSWORD_SALT_ROUNDS } from "$env/static/private";
-import type { AccessTokenType } from "$lib/types/tokens/access_token";
+import { PRIVATE_PASSWORD_SALT_ROUNDS } from "$env/static/private";
+import type {  } from "$lib/types/tokens/access_token";
 import type { PageServerLoad } from "./$types";
 import type { DBUsersType } from "$lib/types/database/users";
-import { createConstantSaltHash, generateNewUserRefreshToken } from "$lib/server/auth";
+import { createConstantSaltHash } from "$lib/server/auth/auth";
 
 export const load: PageServerLoad = async ({locals}) => {
     if (locals.user != undefined) throw redirect(303, "/app/dashboard")
@@ -24,7 +24,7 @@ export const actions = {
     const name: string = data.get("name")?.toString() || "";
     const surname: string = data.get("surname")?.toString() || "";
     
-
+    return
     if (email == "" || password == "" || name == "" || surname == "")
       return { code: 400, message: "Please fill out all fields." };
 
@@ -42,7 +42,7 @@ export const actions = {
     if (await readUsersData(emailHash) != undefined) return { code: 409, message: "User already exists." };
     
     const passwordHash = await bcrypt.hash(password, Number(PRIVATE_PASSWORD_SALT_ROUNDS))
-    const token = await generateNewUserRefreshToken()
+    //const token = await generateNewUserRefreshToken()
     // @ts-ignore
     const dataToInsert: DBUsersType = {
       email: email,
@@ -55,7 +55,7 @@ export const actions = {
     await updateUsersData(emailHash, dataToInsert)
     // @ts-ignore
     const JWTData: AccessTokenType = {name: name, perms: ""}
-    const JWT = jwt.sign(JWTData, PRIVATE_JWT_SECRET, {expiresIn: "30d"})
+//const JWT = jwt.sign(JWTData, PRIVATE_JWT_SECRET, {expiresIn: "30d"})
 
     cookies.set("AuthorizationToken", `${JWT}`, {
       secure: true,
@@ -66,3 +66,4 @@ export const actions = {
     throw redirect(303, "/app/dashboard")
   },
 } satisfies Actions;
+ */
