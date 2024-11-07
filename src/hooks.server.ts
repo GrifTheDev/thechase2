@@ -5,7 +5,7 @@ import {
 } from "$env/static/private";
 import { queryWhereUsersData, updateUsersData } from "$lib/database/database";
 import {
-  invalidateSpecificUserTokenPair,
+  invalidateUserAuthTokenPair,
   requestNewTokenPair,
 } from "$lib/server/auth/auth";
 import type { AccessTokenPayloadType } from "$lib/types/tokens/access_token";
@@ -62,12 +62,15 @@ export const handle = (async ({ event, resolve }) => {
     // TODO If the token expired, remove just that token from the array, if the error is something else, delete everything
     try {
       jwt.verify(refreshToken, PRIVATE_JWT_REFRESH_TOKEN_SECRET);
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
+      let invalidationOption: "rt_specific" | "rt_all" = error.toString().startsWith("TokenExpiredError") ? "rt_specific" : "rt_all" 
 
-      await invalidateSpecificUserTokenPair(accessToken, refreshToken);
-      event.cookies.delete(accessToken, { path: "/" });
-      event.cookies.delete(refreshToken, { path: "/" });
+      const invalidationResult = await invalidateUserAuthTokenPair(accessToken, refreshToken, invalidationOption);
+      if (invalidationResult == 401 || invalidationResult == 200) {
+        event.cookies.delete("AccessToken", { path: "/" });
+        event.cookies.delete("RefreshToken", { path: "/" });
+      }
       throw redirect(303, "/login");
     }
 

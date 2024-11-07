@@ -53,48 +53,70 @@ async function validateStoredUserTokens(
   }
 }
 
-async function invalidateSpecificUserTokenPair(
+/**
+ * @description This function should be called whenever you want to invalidate user auth tokens.
+ */
+async function invalidateUserAuthTokenPair(
   accessToken: string,
-  refreshToken: string
-) {
+  refreshToken: string,
+  options: "rt_specific" | "rt_all"
+): Promise<200 | 401 | 500> {
   const querySnapshot = await queryWhereUsersData(
     "access_token",
     accessToken,
     "=="
   );
 
-  if (querySnapshot?.size != 1)
+  // * This can most likely happen if the access_token was reset in the database, causing the system not to be able to find it.
+  if (querySnapshot?.size == 0) {
+    console.log(`[WARN] [INVALIDATE_TOKEN_PAIR]:: Could not find the document with the provided access token. Request new authorization.\n\n ${accessToken} ${refreshToken}`)
+    return 401
+  } 
+  // * This should still never trigger.
+  else if (querySnapshot?.size != 1) {
     console.log(
       `detected multiple documents with the same auth token???\n`,
       querySnapshot?.docs
     );
+    return 500
+  }
+  if (querySnapshot == undefined) return 500;
 
-  querySnapshot?.forEach(async (doc) => {
-    let refreshTokenArray: Array<string> = doc.get("refresh_tokens");
-    const oldTokenIndex = refreshTokenArray.indexOf(refreshToken)
+  const docData = querySnapshot.docs[0].data();
+  const docID = querySnapshot.docs[0].id;
 
-    if (oldTokenIndex != -1) {
-      let consumedRefreshTokens: Array<string> = doc.get(
-        "consumed_refresh_tokens"
-      );
-      let consumedToken: Array<string> = refreshTokenArray.splice(
-        refreshTokenArray.indexOf(refreshToken),
-        1
-      );
-      await updateUsersData(doc.id, {
+  let refreshTokenArray: Array<string> = docData.refresh_tokens;
+  let consumedRefreshTokens: Array<string> = docData.consumed_refresh_tokens;
+
+  switch (options) {
+    case "rt_specific":
+      const oldTokenIndex = refreshTokenArray.indexOf(refreshToken);
+      if (oldTokenIndex == -1) {
+        console.log(
+          `[WARN] [AUTH_TOKEN_PAIR_INVALIDATION] :: The flag "rt_specific" was passed to the function, however, the search for the provided refresh_token returned -1.\n\nDB DATA: ${JSON.stringify(docData)}`
+        );
+        return 500;
+      } else {
+        let consumedToken: Array<string> = refreshTokenArray.splice(
+          refreshTokenArray.indexOf(refreshToken),
+          1
+        );
+        await updateUsersData(docID, {
+          access_token: "",
+          refresh_tokens: refreshTokenArray,
+          consumed_refresh_tokens: [...consumedRefreshTokens, ...consumedToken],
+        });
+      }
+      return 200;
+    case "rt_all":
+      await updateUsersData(docID, {
         access_token: "",
-        refresh_tokens: refreshTokenArray,
-        consumed_refresh_tokens: [...consumedRefreshTokens, ...consumedToken],
+        refresh_tokens: [],
+        consumed_refresh_tokens: [...consumedRefreshTokens, ...refreshTokenArray],
       });
-    } else {
-      await updateUsersData(doc.id, {
-        access_token: "",
-      });
-    }
-    
 
-    
-  });
+      return 200;
+  }
 }
 
 // * 0. Since hooks checks the refresh token first, we know that at this point we will get a valid refresh token.
@@ -122,16 +144,18 @@ async function requestNewTokenPair(
       querySnapshot?.docs
     );
 
-  if (querySnapshot == undefined) return undefined
+  if (querySnapshot == undefined) return undefined;
 
-  const docData =  querySnapshot.docs[0].data()
-  const consumedRefreshTokens = docData.consumed_refresh_tokens
+  const docData = querySnapshot.docs[0].data();
+  const consumedRefreshTokens = docData.consumed_refresh_tokens;
 
   // TODO expand on the invalidation function, the below should clear all refresh tokens.
   if (consumedRefreshTokens.includes(refreshToken)) {
-    console.log(`[DANGER] [AUTH] :: An attempt is being made to use a consumed refresh token to aquire a new access token. Dump:\n ${docData}`)
-    await invalidateSpecificUserTokenPair(accessToken, refreshToken)
-    return "danger"
+    console.log(
+      `[DANGER] [AUTH] :: An attempt is being made to use a consumed refresh token to aquire a new access token. Dump:\n ${docData}`
+    );
+    await invalidateUserAuthTokenPair(accessToken, refreshToken, "rt_specific");
+    return "danger";
   } else {
     // all good!
   }
@@ -146,4 +170,8 @@ async function renewAccessToken(
   dbData: DBUsersType | undefined
 ) {}
 
-export { validateStoredUserTokens, invalidateSpecificUserTokenPair, requestNewTokenPair };
+export {
+  validateStoredUserTokens,
+  invalidateUserAuthTokenPair,
+  requestNewTokenPair,
+};
