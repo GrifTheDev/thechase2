@@ -1,5 +1,5 @@
 import { getDB } from "./initialize_firebase";
-import { doc, getDoc, collection, setDoc, query, where, type WhereFilterOp, getDocs, type DocumentData, QuerySnapshot } from "@firebase/firestore";
+import { doc, getDoc, collection, setDoc, query, where, type WhereFilterOp, getDocs, type DocumentData, QuerySnapshot, QueryDocumentSnapshot } from "@firebase/firestore";
 import type { DBUsersType, DBUsersTypeWrite } from "$lib/types/database/users";
 import type { QuestionSetsType } from "$lib/types/database/question_sets";
 
@@ -57,8 +57,28 @@ async function updateUsersData(docID: string, data: DBUsersTypeWrite) {
   await updateDocData("users", docID, data);
 }
 
-async function queryWhereUsersData(field: string, value: string, operator: WhereFilterOp) {
-  return await queryWhere("users", field, value, operator) as QuerySnapshot<DBUsersType> | undefined
+async function queryWhereUsersData(field: string, value: string, operator: WhereFilterOp, options: "all" | "first"): Promise<QuerySnapshot<DBUsersType, DocumentData> | undefined> {
+  const querySnapshot = await queryWhere("users", field, value, operator) as QuerySnapshot<DBUsersType>
+
+  if (querySnapshot.size == 0) {
+    console.log(`[WARN] [QUERY_WHERE_USERD] [${field}]:: Could not find the document with the provided info.`)
+    return undefined
+  } else {
+    switch (options) {
+      case "all":
+        return querySnapshot
+      case "first":
+        if (querySnapshot.size != 1) {
+          console.log(`[WARN] [QUERY_WHERE_USERD] [${field}]:: You specified the "first" option, however, multiple docs were found.`)
+          return undefined
+        } else {
+          return querySnapshot
+        }        
+    }
+  }
+
+  
+
 }
 
 async function readQuestionSetsData(docID: string) {

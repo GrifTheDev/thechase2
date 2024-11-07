@@ -61,29 +61,16 @@ async function invalidateUserAuthTokenPair(
   refreshToken: string,
   options: "rt_specific" | "rt_all"
 ): Promise<200 | 401 | 500> {
-  const querySnapshot = await queryWhereUsersData(
+  const queryDocs = await queryWhereUsersData(
     "access_token",
     accessToken,
-    "=="
+    "==",
+    "first"
   );
+  if (queryDocs == undefined) return 500;
 
-  // * This can most likely happen if the access_token was reset in the database, causing the system not to be able to find it.
-  if (querySnapshot?.size == 0) {
-    console.log(`[WARN] [INVALIDATE_TOKEN_PAIR]:: Could not find the document with the provided access token. Request new authorization.\n\n ${accessToken} ${refreshToken}`)
-    return 401
-  } 
-  // * This should still never trigger.
-  else if (querySnapshot?.size != 1) {
-    console.log(
-      `detected multiple documents with the same auth token???\n`,
-      querySnapshot?.docs
-    );
-    return 500
-  }
-  if (querySnapshot == undefined) return 500;
-
-  const docData = querySnapshot.docs[0].data();
-  const docID = querySnapshot.docs[0].id;
+  const docData = queryDocs.docs[0].data();
+  const docID = queryDocs.docs[0].id;
 
   let refreshTokenArray: Array<string> = docData.refresh_tokens;
   let consumedRefreshTokens: Array<string> = docData.consumed_refresh_tokens;
@@ -134,7 +121,8 @@ async function requestNewTokenPair(
   const querySnapshot = await queryWhereUsersData(
     "access_token",
     accessToken,
-    "=="
+    "==",
+    "first"
   );
 
   // * I am 90% confident this will never trigger.

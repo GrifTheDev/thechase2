@@ -9,7 +9,7 @@ import {
   requestNewTokenPair,
 } from "$lib/server/auth/auth";
 import type { AccessTokenPayloadType } from "$lib/types/tokens/access_token";
-import { redirect, type Handle } from "@sveltejs/kit";
+import { redirect, type Handle, error } from "@sveltejs/kit";
 import jwt from "jsonwebtoken";
 
 /* export const handle = (async ({ event, resolve }) => {
@@ -57,19 +57,18 @@ export const handle = (async ({ event, resolve }) => {
       throw redirect(303, "/login");
 
     // * Check if refresh token expired or is somehow broken first. If so, purge DB and cookies and return to login/
-    // * We don't care for the specific reason, but if the try fails, aka goes to catch, we just want to delete everything and throw to /login
-    
-    // TODO If the token expired, remove just that token from the array, if the error is something else, delete everything
     try {
       jwt.verify(refreshToken, PRIVATE_JWT_REFRESH_TOKEN_SECRET);
-    } catch (error: any) {
-      console.log(error);
-      let invalidationOption: "rt_specific" | "rt_all" = error.toString().startsWith("TokenExpiredError") ? "rt_specific" : "rt_all" 
+    } catch (err: any) {
+      console.log(err);
+      let invalidationOption: "rt_specific" | "rt_all" = err.toString().startsWith("TokenExpiredError") ? "rt_specific" : "rt_all" 
 
       const invalidationResult = await invalidateUserAuthTokenPair(accessToken, refreshToken, invalidationOption);
       if (invalidationResult == 401 || invalidationResult == 200) {
         event.cookies.delete("AccessToken", { path: "/" });
         event.cookies.delete("RefreshToken", { path: "/" });
+      } else {
+        throw error(500, {message: "The server returned an error while trying to run middleware"})
       }
       throw redirect(303, "/login");
     }
