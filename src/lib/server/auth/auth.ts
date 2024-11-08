@@ -57,17 +57,16 @@ async function validateStoredUserTokens(
  * @description This function should be called whenever you want to invalidate user auth tokens.
  */
 async function invalidateUserAuthTokenPair(
-  accessToken: string,
   refreshToken: string,
   options: "rt_specific" | "rt_all"
-): Promise<200 | 401 | 500> {
+): Promise<200 | 401 | 404 | 500> {
   const queryDocs = await queryWhereUsersData(
-    "access_token",
-    accessToken,
-    "==",
+    "refresh_tokens",
+    refreshToken,
+    "array-contains",
     "first"
   );
-  if (queryDocs == undefined) return 500;
+  if (queryDocs == undefined) return 404;
 
   const docData = queryDocs.docs[0].data();
   const docID = queryDocs.docs[0].id;
@@ -117,24 +116,17 @@ async function invalidateUserAuthTokenPair(
 async function requestNewTokenPair(
   accessToken: string,
   refreshToken: string
-): Promise<AuthTokenPairType | undefined | "danger"> {
-  const querySnapshot = await queryWhereUsersData(
-    "access_token",
-    accessToken,
-    "==",
+): Promise<AuthTokenPairType | 404 | 500> {
+  const queryDocs = await queryWhereUsersData(
+    "refresh_tokens",
+    refreshToken,
+    "array-contains",
     "first"
   );
 
-  // * I am 90% confident this will never trigger.
-  if (querySnapshot?.size != 1)
-    console.log(
-      `detected multiple documents with the same auth token???\n`,
-      querySnapshot?.docs
-    );
+  if (queryDocs == undefined) return 404;
 
-  if (querySnapshot == undefined) return undefined;
-
-  const docData = querySnapshot.docs[0].data();
+  const docData = queryDocs.docs[0].data();
   const consumedRefreshTokens = docData.consumed_refresh_tokens;
 
   // TODO expand on the invalidation function, the below should clear all refresh tokens.
@@ -142,13 +134,13 @@ async function requestNewTokenPair(
     console.log(
       `[DANGER] [AUTH] :: An attempt is being made to use a consumed refresh token to aquire a new access token. Dump:\n ${docData}`
     );
-    await invalidateUserAuthTokenPair(accessToken, refreshToken, "rt_specific");
-    return "danger";
+    await invalidateUserAuthTokenPair(refreshToken, "rt_specific");
+    return 500;
   } else {
     // all good!
   }
 
-  return undefined;
+  return 500;
 }
 
 // !IMplement
