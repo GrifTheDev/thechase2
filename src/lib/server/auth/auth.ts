@@ -6,6 +6,7 @@ import type { RefreshTokenPayloadType } from "$lib/types/tokens/refresh_token";
 import { queryWhereUsersData, updateUsersData } from "$lib/database/database";
 import { createAccessToken, createRefreshToken } from "./utilities";
 import type { AuthTokenPairType } from "$lib/types/tokens/auth_token_pair";
+import { error } from "@sveltejs/kit";
 
 /**
  * @description Function responsible for validating ONLY STORED access and refresh tokens. Called only on LOGIN.
@@ -60,13 +61,27 @@ async function invalidateUserAuthTokenPair(
   refreshToken: string,
   options: "rt_specific" | "rt_all"
 ): Promise<200 | 401 | 404 | 500> {
-  const queryDocs = await queryWhereUsersData(
+  let queryDocs = await queryWhereUsersData(
     "refresh_tokens",
     refreshToken,
     "array-contains",
     "first"
   );
-  if (queryDocs == undefined) return 404;
+
+  if (queryDocs == undefined) {
+    let checkConsumedTokens = await queryWhereUsersData(
+      "consumed_refresh_tokens",
+      refreshToken,
+      "array-contains",
+      "first"
+    );
+
+    if (checkConsumedTokens == undefined) {
+      return 404;
+    } else {
+      queryDocs = checkConsumedTokens;
+    }
+  }
 
   const docData = queryDocs.docs[0].data();
   const docID = queryDocs.docs[0].id;
@@ -79,7 +94,9 @@ async function invalidateUserAuthTokenPair(
       const oldTokenIndex = refreshTokenArray.indexOf(refreshToken);
       if (oldTokenIndex == -1) {
         console.log(
-          `[WARN] [AUTH_TOKEN_PAIR_INVALIDATION] :: The flag "rt_specific" was passed to the function, however, the search for the provided refresh_token returned -1.\n\nDB DATA: ${JSON.stringify(docData)}`
+          `[WARN] [AUTH_TOKEN_PAIR_INVALIDATION] :: The flag "rt_specific" was passed to the function, however, the search for the provided refresh_token returned -1.\n\nDB DATA: ${JSON.stringify(
+            docData
+          )}`
         );
         return 500;
       } else {
@@ -98,7 +115,10 @@ async function invalidateUserAuthTokenPair(
       await updateUsersData(docID, {
         access_token: "",
         refresh_tokens: [],
-        consumed_refresh_tokens: [...consumedRefreshTokens, ...refreshTokenArray],
+        consumed_refresh_tokens: [
+          ...consumedRefreshTokens,
+          ...refreshTokenArray,
+        ],
       });
 
       return 200;
@@ -112,35 +132,61 @@ async function invalidateUserAuthTokenPair(
 // ? 2. Check if the refresh token provided is in the used tokens - if so, call invalidateSpecificUserTokenPair and return "danger"
 // ? 3. At this point we've verified that both tokens and are ready to start the process. We generate a new access token & a new refresh token
 // ?    We can call the invalidate specific user token pair and then add the new token pair and return it.
-// ? 4. Declare better return types
 async function requestNewTokenPair(
-  accessToken: string,
   refreshToken: string
-): Promise<AuthTokenPairType | 404 | 500> {
-  const queryDocs = await queryWhereUsersData(
+): Promise<AuthTokenPairType | 401 | 404 | 500> {
+  let queryDocs = await queryWhereUsersData(
     "refresh_tokens",
     refreshToken,
     "array-contains",
     "first"
   );
 
-  if (queryDocs == undefined) return 404;
-
-  const docData = queryDocs.docs[0].data();
-  const consumedRefreshTokens = docData.consumed_refresh_tokens;
-
-  // TODO expand on the invalidation function, the below should clear all refresh tokens.
-  if (consumedRefreshTokens.includes(refreshToken)) {
-    console.log(
-      `[DANGER] [AUTH] :: An attempt is being made to use a consumed refresh token to aquire a new access token. Dump:\n ${docData}`
+  if (queryDocs == undefined) {
+    let checkConsumedTokens = await queryWhereUsersData(
+      "consumed_refresh_tokens",
+      refreshToken,
+      "array-contains",
+      "first"
     );
-    await invalidateUserAuthTokenPair(refreshToken, "rt_specific");
-    return 500;
-  } else {
-    // all good!
-  }
 
-  return 500;
+    // * Since the first query failed and the second one returned a valid document we know the refresh token is consumed.
+    // * This, however, relies on the fact that no access token can be present in both "refresh_tokens" & "consumed_refresh_tokens"
+    // * at the same time.
+    if (checkConsumedTokens != undefined) {
+      console.log(
+        `[WARN] [AUTH] :: An attempt is being made to use a consumed refresh token to aquire a new access token. Dump:\n ${checkConsumedTokens.docs[0].data()}`
+      );
+      await invalidateUserAuthTokenPair(refreshToken, "rt_all");
+      return 401
+    }
+  }
+  // * We found a valid document, the refresh token has not been consumed, the access token is valid. Best case, and most likely, scenario :)
+  else {
+    await invalidateUserAuthTokenPair(refreshToken, "rt_specific");
+    const docData = queryDocs.docs[0].data();
+    const docID = queryDocs.docs[0].id
+    const refreshTokens = docData.refresh_tokens;
+    const newRefreshToken = await createRefreshToken()
+    const newAccessToken = await createAccessToken(docData)
+
+    // * We need to remove the refreshToken since the query was from an older version that has not been invalidated.
+    if (refreshTokens.indexOf(refreshToken)) throw error(500, {message: "this should never fukin happen."})
+    refreshTokens.splice(
+      refreshTokens.indexOf(refreshToken),
+      1
+    );
+    refreshTokens.push(newRefreshToken)
+
+    await updateUsersData(docID, {
+      access_token: newAccessToken,
+      refresh_tokens: refreshTokens
+    })
+    
+    return {accessToken: newAccessToken, refreshToken: newRefreshToken}
+
+  }
+  return 500
 }
 
 // !IMplement
