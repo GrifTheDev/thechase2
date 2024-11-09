@@ -58,23 +58,32 @@ async function updateUsersData(docID: string, data: DBUsersTypeWrite) {
 }
 
 async function queryWhereUsersData(field: string, value: string, operator: WhereFilterOp, options: "all" | "first"): Promise<QuerySnapshot<DBUsersType, DocumentData> | undefined> {
-  const querySnapshot = await queryWhere("users", field, value, operator) as QuerySnapshot<DBUsersType>
+  let querySnapshot
 
-  if (querySnapshot.size == 0) {
-    console.log(`[WARN] [QUERY_WHERE_USERD] [${field}]:: Could not find the document with the provided info.`)
-    return undefined
-  } else {
-    switch (options) {
-      case "all":
-        return querySnapshot
-      case "first":
-        if (querySnapshot.size != 1) {
-          console.log(`[WARN] [QUERY_WHERE_USERD] [${field}]:: You specified the "first" option, however, multiple docs were found.`)
-          return undefined
-        } else {
-          return querySnapshot
-        }        
+  try {
+    querySnapshot = await queryWhere("users", field, value, operator) as QuerySnapshot<DBUsersType>
+  } catch (err) {
+    if (querySnapshot?.size == 0) {
+      console.log(`[WARN] [QUERY_WHERE_USERD] [${field}]:: Could not find the document with the provided info.`)
+      return undefined
+    } else {
+      console.log(`Returned an error while querying: ${err}`)
     }
+    return undefined
+  }
+
+  if (querySnapshot.size == 0) return undefined
+
+  switch (options) {
+    case "all":
+      return querySnapshot
+    case "first":
+      if (querySnapshot.size > 1) {
+        console.log(`[WARN] [QUERY_WHERE_USERD] [${field}]:: You specified the "first" option, however, multiple docs were found.`)
+        return undefined
+      } else {
+        return querySnapshot
+      }        
   }
 
   
