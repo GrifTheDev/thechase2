@@ -19,26 +19,9 @@ export const handle = (async ({ event, resolve }) => {
   if (sanitizedRoute.startsWith("/test")) {
     const accessToken = event.cookies.get("AccessToken");
     const refreshToken = event.cookies.get("RefreshToken");
-
+    console.log("yes")
     if (accessToken == undefined || refreshToken == undefined)
       throw redirect(303, "/login");
-
-    // * Check if refresh token expired or is somehow broken first. If so, purge DB and cookies and return to login/
-    try {
-      jwt.verify(refreshToken, PRIVATE_JWT_REFRESH_TOKEN_SECRET);
-    } catch (err: any) {
-      console.log(err);
-      let invalidationOption: "rt_specific" | "rt_all" = err.toString().startsWith("TokenExpiredError") ? "rt_specific" : "rt_all" 
-
-      const invalidationResult = await invalidateUserAuthTokenPair(refreshToken, invalidationOption);
-      if (invalidationResult == 401 || invalidationResult == 200 || invalidationResult == 404) {
-        event.cookies.delete("AccessToken", { path: "/" });
-        event.cookies.delete("RefreshToken", { path: "/" });
-        throw redirect(303, "/login");
-      } else {
-        throw error(500, {message: "The server returned an error while trying to run middleware"})
-      }
-    }
 
     // * If access token cannot be verified, this could be due to expiry. Unlike the refresh token, if an access token expires we need to request a new one.
     // * If we receive some other error, like malformed token, we clear everything.
@@ -70,7 +53,7 @@ export const handle = (async ({ event, resolve }) => {
           });
         }
       } else {
-        await invalidateUserAuthTokenPair(refreshToken, "rt_specific")
+        await invalidateUserAuthTokenPair(refreshToken, "rt_all")
         event.cookies.delete("AccessToken", { path: "/" });
         event.cookies.delete("RefreshToken", { path: "/" });
         throw redirect(303, "/login");

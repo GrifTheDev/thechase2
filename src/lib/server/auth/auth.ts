@@ -1,4 +1,4 @@
-import { PRIVATE_JWT_ACCESS_TOKEN_SECRET } from "$env/static/private";
+import { PRIVATE_JWT_ACCESS_TOKEN_SECRET, PRIVATE_JWT_REFRESH_TOKEN_SECRET } from "$env/static/private";
 import type { DBUsersType } from "$lib/types/database/users";
 import jwt from "jsonwebtoken";
 import type { AccessTokenPayloadType } from "$lib/types/tokens/access_token";
@@ -59,32 +59,49 @@ async function validateStoredUserTokens(
  */
 async function invalidateUserAuthTokenPair(
   refreshToken: string,
-  options: "rt_specific" | "rt_all"
-): Promise<200 | 401 | 404 | 500> {
-  let queryDocs = await queryWhereUsersData(
-    "refresh_tokens",
-    refreshToken,
-    "array-contains",
-    "first"
-  );
+  options: "rt_specific" | "rt_all",
+  dbData?: DBUsersType & {id: string | undefined}
+): Promise<200 | 404 | 500> {
+  /* let docData: DBUsersType = queryDocs.docs[0].data();
+  let docID = queryDocs.docs[0].id; */
 
-  if (queryDocs == undefined) {
-    let checkConsumedTokens = await queryWhereUsersData(
-      "consumed_refresh_tokens",
+  let docData: DBUsersType
+  let docID: string
+
+  if (dbData != undefined) {
+    if (dbData.id == undefined) return 500
+    docID = dbData.id
+    delete dbData.id
+    docData = dbData
+  } else {
+    let queryDocs = await queryWhereUsersData(
+      "refresh_tokens",
       refreshToken,
       "array-contains",
       "first"
     );
-
-    if (checkConsumedTokens == undefined) {
-      return 404;
-    } else {
-      queryDocs = checkConsumedTokens;
+  
+    if (queryDocs == undefined) {
+      let checkConsumedTokens = await queryWhereUsersData(
+        "consumed_refresh_tokens",
+        refreshToken,
+        "array-contains",
+        "first"
+      );
+  
+      if (checkConsumedTokens == undefined) {
+        return 404;
+      } else {
+        queryDocs = checkConsumedTokens;
+      }
     }
+
+    docData = queryDocs.docs[0].data()
+    docID = queryDocs.docs[0].id
+
   }
 
-  const docData = queryDocs.docs[0].data();
-  const docID = queryDocs.docs[0].id;
+  
 
   let refreshTokenArray: Array<string> = docData.refresh_tokens;
   let consumedRefreshTokens: Array<string> = docData.consumed_refresh_tokens;
@@ -125,16 +142,29 @@ async function invalidateUserAuthTokenPair(
   }
 }
 
-// * 0. Since hooks checks the refresh token first, we know that at this point we will get a valid refresh token.
-// *    We also know the access token is valid, since it returned the Expired error. TLDR; we have a working token pair
-//*     But just the access token is expired.
-
-// ? 2. Check if the refresh token provided is in the used tokens - if so, call invalidateSpecificUserTokenPair and return "danger"
-// ? 3. At this point we've verified that both tokens and are ready to start the process. We generate a new access token & a new refresh token
-// ?    We can call the invalidate specific user token pair and then add the new token pair and return it.
 async function requestNewTokenPair(
   refreshToken: string
 ): Promise<AuthTokenPairType | 401 | 404 | 500> {
+  
+  try {
+    jwt.verify(refreshToken, PRIVATE_JWT_REFRESH_TOKEN_SECRET);
+  } catch (err: any) {
+    console.log(err);
+    let invalidationOption: "rt_specific" | "rt_all" = err.toString().startsWith("TokenExpiredError") ? "rt_specific" : "rt_all" 
+
+    const invalidationResult = await invalidateUserAuthTokenPair(refreshToken, invalidationOption);
+    if (invalidationResult == 404) {
+      return 404
+    } else if (invalidationResult == 500) {
+      throw error(500, {message: "Whoops!", devDump: err})
+    } 
+    else {
+      return 401
+    }
+  }
+
+  // * Refresh token is valid.
+  
   let queryDocs = await queryWhereUsersData(
     "refresh_tokens",
     refreshToken,
@@ -157,9 +187,11 @@ async function requestNewTokenPair(
       console.log(
         `[WARN] [AUTH] :: An attempt is being made to use a consumed refresh token to aquire a new access token. Dump:\n ${checkConsumedTokens.docs[0].data()}`
       );
-      await invalidateUserAuthTokenPair(refreshToken, "rt_all");
+      await invalidateUserAuthTokenPair(refreshToken, "rt_all", Object.assign(checkConsumedTokens.docs[0].data(), {id: checkConsumedTokens.docs[0].id}));
       return 401
-    }
+    } else {
+      return 404
+    } 
   }
   // * We found a valid document, the refresh token has not been consumed, the access token is valid. Best case, and most likely, scenario :)
   else {
@@ -171,7 +203,7 @@ async function requestNewTokenPair(
     const newAccessToken = await createAccessToken(docData)
 
     // * We need to remove the refreshToken since the query was from an older version that has not been invalidated.
-    if (refreshTokens.indexOf(refreshToken)) throw error(500, {message: "this should never fukin happen."})
+    if (refreshTokens.indexOf(refreshToken) == -1) throw error(500, {message: "this should never fukin happen."})
     refreshTokens.splice(
       refreshTokens.indexOf(refreshToken),
       1
@@ -186,15 +218,7 @@ async function requestNewTokenPair(
     return {accessToken: newAccessToken, refreshToken: newRefreshToken}
 
   }
-  return 500
 }
-
-// !IMplement
-async function renewAccessToken(
-  accessToken: AccessTokenPayloadType,
-  refershToken: RefreshTokenPayloadType,
-  dbData: DBUsersType | undefined
-) {}
 
 export {
   validateStoredUserTokens,
