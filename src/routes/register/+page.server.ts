@@ -1,32 +1,23 @@
-/* import { redirect, type Actions, error } from "@sveltejs/kit";
-import { createHash } from "crypto";
-import bcrypt from "bcrypt";
-import { readUsersData, updateUsersData } from "$lib/database/database";
-import jwt from "jsonwebtoken"
-import { PRIVATE_PASSWORD_SALT_ROUNDS } from "$env/static/private";
-import type {  } from "$lib/types/tokens/access_token";
+import { redirect, type Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
-import type { DBUsersType } from "$lib/types/database/users";
-import { createConstantSaltHash } from "$lib/server/auth/auth";
 
-export const load: PageServerLoad = async ({locals}) => {
-    if (locals.user != undefined) throw redirect(303, "/app/dashboard")
+export const load: PageServerLoad = async ({cookies}) => {
+  if (cookies.get("AccessToken") != undefined) throw redirect(303, "/app/dashboard")
 }; 
 
 // TODO: Add region suspicion thing
 // TODO: LOADING ANIM
 export const actions = {
-  default: async ({ cookies, request }) => {
+  default: async ({ request, fetch }) => {
     const data = await request.formData();
     const email: string = data.get("email")?.toString() || "";
-    let password: string = data.get("password")?.toString() || "";
+    const password: string = data.get("password")?.toString() || "";
     const confirmPswd: string = data.get("confirmPswd")?.toString() || "";
     const name: string = data.get("name")?.toString() || "";
     const surname: string = data.get("surname")?.toString() || "";
-    
-    return
-    if (email == "" || password == "" || name == "" || surname == "")
-      return { code: 400, message: "Please fill out all fields." };
+
+    if (email == "" || password == "")
+      return { code: 400, message: "Please fill out both fields." };
 
     // E-mail does not contain @something.com
     if (email.split("@").length < 2)
@@ -37,33 +28,18 @@ export const actions = {
 
     if (confirmPswd != password) return {code: 400, message: "Passwords do not match."}
 
-    const emailHash = await createConstantSaltHash(email)
-    
-    if (await readUsersData(emailHash) != undefined) return { code: 409, message: "User already exists." };
-    
-    const passwordHash = await bcrypt.hash(password, Number(PRIVATE_PASSWORD_SALT_ROUNDS))
-    //const token = await generateNewUserRefreshToken()
-    // @ts-ignore
-    const dataToInsert: DBUsersType = {
-      email: email,
-      password: passwordHash,
-      name: name,
-      surname: surname,
-      access_token: token
+    const res = await fetch("/api/user/register", {
+      method: "POST",
+      body: JSON.stringify({ name: name, surname: surname, email: email, password: password })
+    })
+
+    const resContent = await res.json()
+
+    if (resContent.code == 201) {
+      throw redirect(303, "/app/dashboard")
+    } else {
+      return resContent
     }
-
-    await updateUsersData(emailHash, dataToInsert)
-    // @ts-ignore
-    const JWTData: AccessTokenType = {name: name, perms: ""}
-//const JWT = jwt.sign(JWTData, PRIVATE_JWT_SECRET, {expiresIn: "30d"})
-
-    cookies.set("AuthorizationToken", `${JWT}`, {
-      secure: true,
-      path: "/",
-      sameSite: "strict",
-      maxAge: 60 * 60 * 24 * 30,
-    });
-    throw redirect(303, "/app/dashboard")
-  },
+  }
 } satisfies Actions;
- */
+ 

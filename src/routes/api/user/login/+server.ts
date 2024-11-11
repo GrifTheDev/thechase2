@@ -38,7 +38,6 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
       path: "/",
       sameSite: "strict",
     });
-    // TODO, handle success client side
     return Response.json({code: 200, message: "OK"})
   } else {
     return Response.json({ code: 401, message: "Invalid username/password." });

@@ -1,6 +1,7 @@
 import { redirect, type Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 
+// TODO: Not safe, offload to middleware.
 export const load: PageServerLoad = async ({cookies}) => {
     if (cookies.get("AccessToken") != undefined) throw redirect(303, "/app/dashboard")
 }; 
