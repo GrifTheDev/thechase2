@@ -4,7 +4,6 @@ import {
 } from "$lib/server/auth/auth";
 import { createConstantSaltHash } from "$lib/server/auth/utilities";
 import type { RequestHandler } from "./$types";
-import { json } from "@sveltejs/kit";
 import bcrypt from "bcrypt";
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
@@ -14,7 +13,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
   const dbData = await readUsersData(emailHash);
 
   if (dbData == undefined)
-    return json({ code: 400, message: "Invalid email/password." });
+    return Response.json({ code: 400, message: "Invalid email/password." });
 
   const storedPasswordHash: string = dbData.password;
   const userAuthenticated = await bcrypt.compare(password, storedPasswordHash);
@@ -23,7 +22,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
     const tokenPair = await validateStoredUserTokens(emailHash, dbData);
 
     if (tokenPair == undefined)
-      return json({
+      return Response.json({
         code: 500,
         message: "An unexpected internal error happened. Sorry!",
       });
@@ -40,8 +39,8 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
       sameSite: "strict",
     });
     // TODO, handle success client side
-    return json({code: 200, message: "OK"})
+    return Response.json({code: 200, message: "OK"})
   } else {
-    return json({ code: 401, message: "Invalid username/password." });
+    return Response.json({ code: 401, message: "Invalid username/password." });
   }
 };
