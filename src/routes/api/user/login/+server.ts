@@ -9,6 +9,7 @@ import bcrypt from "bcrypt";
 export const POST: RequestHandler = async ({ request, cookies }) => {
   const { email, password } = await request.json();
 
+  if (email == undefined || password == undefined) return Response.json({ code: 400, message: "Bad request" });
   const emailHash = await createConstantSaltHash(email);
   const dbData = await readUsersData(emailHash);
 

@@ -5,7 +5,10 @@ import type { RequestHandler } from "./$types";
 import bcrypt from "bcrypt";
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
+
   const { name, surname, email, password } = await request.json();
+
+  if (email == undefined || password == undefined || name == undefined || password == undefined) return Response.json({ code: 400, message: "Bad request" });
 
   const emailHash = await createConstantSaltHash(email);
   const dbData = await readUsersData(emailHash);
