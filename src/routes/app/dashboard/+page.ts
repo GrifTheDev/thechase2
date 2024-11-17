@@ -3,7 +3,7 @@ import type { PageLoad } from './$types';
 import { readQuestionSetsData } from '$lib/database/database';
 
 // TODO Chacing?
-export const load: PageLoad = async({ data, fetch }) => {
+export const load: PageLoad = async({ fetch }) => {
 	const questionSetIDs = await fetch("/api/question_sets/fetch_ids")
     const d = await questionSetIDs.json()
     return {questionSets: d}
