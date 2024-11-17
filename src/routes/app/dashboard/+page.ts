@@ -1,6 +1,4 @@
-import { redirect } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
-import { readQuestionSetsData } from '$lib/database/database';
 
 // TODO Chacing?
 export const load: PageLoad = async({ fetch }) => {
