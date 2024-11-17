@@ -5,6 +5,6 @@ import { readQuestionSetsData } from '$lib/database/database';
 // TODO Chacing?
 export const load: PageLoad = async({ fetch }) => {
 	const questionSetIDs = await fetch("/api/question_sets/fetch_ids")
-    const d = await questionSetIDs.json()
-    return {questionSets: d}
+    const data = await questionSetIDs.json()
+    return {questionSets: data.questionSetIDs}
 };

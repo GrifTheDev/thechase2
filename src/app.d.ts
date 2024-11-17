@@ -2,6 +2,7 @@
 
 import type { AuthCookieType } from "$lib/types/tokens/access_token";
 
+
 // See https://kit.svelte.dev/docs/types#app
 // for information about these interfaces
 declare global {
@@ -19,5 +20,6 @@ declare global {
 		// interface Platform {}
 	}
 }
+
 
 export {};
