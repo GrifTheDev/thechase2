@@ -30,7 +30,7 @@ export const handle = (async ({ event, resolve }) => {
     try {
       jwt.verify(accessToken, PRIVATE_JWT_ACCESS_TOKEN_SECRET);
     } catch (error: any) {
-      console.log("hit")
+      console.log("hit", error.toString().startsWith("TokenExpiredError"))
       // * Token has expired. Let's grab a new one!
       if (error.toString().startsWith("TokenExpiredError")) {
         const requestPair = await requestNewTokenPair(
