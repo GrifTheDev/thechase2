@@ -7,7 +7,8 @@
   import { faDice } from "@fortawesome/free-solid-svg-icons";
 
   let randomName = `How about ${randomProjectName()}?`;
-  let genName = $state("")
+  let questionSetName = $state("")
+
 </script>
 
 <div class="w-screen h-screen bg-dashboard-bg">
@@ -15,7 +16,7 @@
     <Heading0 label="Question Set Creation" />
     <div class="flex flex-row justify-center items-center space-x-1">
       <p
-        class="font-bold text-2xl text-black rounded-full bg-white flex items-center justify-center p-5 w-14 h-14"
+        class="font-bold text-2xl text-white rounded-full border-[2px] border-white flex items-center justify-center p-5 w-14 h-14"
       >
         1
       </p>
@@ -25,17 +26,17 @@
       label="Add a title so you can easily identify different question sets from the dashboard."
     />
     <div class="relative">
-      <div class="" onclick={() => { genName = randomProjectName() }} onkeydown={() => { genName = randomProjectName() }} tabindex=0 role="button">
+      <div class="" onclick={() => { questionSetName = randomProjectName() }} onkeydown={() => { questionSetName = randomProjectName() }} tabindex=0 role="button">
         <Fa class="absolute top-1/2 transform -translate-y-1/2 right-3 hover:scale-110 active:scale-90" icon={faDice} color="#FFFFFF" size="lg" />
       </div>
       <input
         class="static rounded-[3px] w-96 h-10 pl-2 pr-11 text-lg text-white font-light border-b-2 border-gray-400 bg-transparent focus:outline-none"
         type="text"
         placeholder={randomName}
-        value={genName}
+        bind:value={questionSetName}
       />
-
-        
     </div>
+    <!---->
+    <button class="text-white text-center text-md border-[3px] bg-blue-600 border-blue-900 rounded-md py-2 px-6 animate-buttonQuestionSetUnHover enabled:animate-buttonQuestionSetCreateNext enabled:hover:animate-buttonQuestionSetHover enabled:active:animate-buttonQuestionSetActivate disabled:animate-buttonQuestionSetCreateRemove" disabled={questionSetName == ""}>Next</button>
   </div>
 </div>
