@@ -10,7 +10,7 @@
     label: string;
     textSize: string;
     clickAction?: MouseEventHandler<HTMLButtonElement>;
-    disabledState: boolean;
+    disabledState?: boolean;
   } = $props();
 </script>
 
