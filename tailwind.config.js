@@ -7,6 +7,10 @@ export default {
         "nav-bg": "#000000",
         "dashboard-bg": "#060A0E",
       },
+      boxShadow: {
+        // x, y, radius, spread, color
+        "whiteGlow": "0 0px 6px -1px rgba(255, 255, 255)"
+      },
       fontFamily: {
         "dm-sans": ["DMSans", "sans-serif"]
       },

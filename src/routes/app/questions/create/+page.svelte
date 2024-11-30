@@ -5,6 +5,7 @@
   import { randomProjectName } from "$lib/utils/random_project_name_gen";
   import Fa from "svelte-fa";
   import { faDice } from "@fortawesome/free-solid-svg-icons";
+  import BlueButton from "$lib/components/buttons/BlueButton.svelte";
 
   let randomName = `How about ${randomProjectName()}?`;
   let questionSetName = $state("")
@@ -37,6 +38,10 @@
       />
     </div>
     <!---->
-    <button class="text-white text-center text-md border-[3px] bg-blue-600 border-blue-900 rounded-md py-2 px-6 animate-buttonQuestionSetUnHover enabled:animate-buttonQuestionSetCreateNext enabled:hover:animate-buttonQuestionSetHover enabled:active:animate-buttonQuestionSetActivate disabled:animate-buttonQuestionSetCreateRemove" disabled={questionSetName == ""}>Next</button>
+    <BlueButton textSize="md" label="Continue" disabledState={questionSetName == ""}></BlueButton>
+  
+    
   </div>
+  
 </div>
+
