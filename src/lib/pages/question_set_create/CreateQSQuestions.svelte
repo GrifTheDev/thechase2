@@ -5,11 +5,30 @@
   import Fa from "svelte-fa";
   import { faDice } from "@fortawesome/free-solid-svg-icons";
   import BlueButton from "$lib/components/buttons/BlueButton.svelte";
+  import PurpleFillButton from "$lib/components/buttons/PurpleFillButton.svelte";
+  import { browser } from "$app/environment";
 
   let randomName = `How about ${randomProjectName()}?`;
   let questionSetName = $state("");
 
-  let questionAmount = $state("50")
+  let maxQuestionAmount = 500
+  let requiredQuestionAmount = 30
+  let recommendedQuestionAmount = 80
+  let questionsAdded = $state(0)
+
+  function dialogOpen() {
+    if (browser) {
+      const dialog = document.querySelector("dialog");
+      dialog?.showModal()
+    }
+  }
+
+  function dialogClose() {
+    if (browser) {
+      const dialog = document.querySelector("dialog");
+      dialog?.close()
+    }
+  }
 </script>
 
 <div class="flex flex-row justify-center items-center space-x-1">
@@ -18,23 +37,38 @@
   >
     2
   </p>
-  <Heading1 label="Questions" />
+  <Heading1 label="Questions - Three Answers" />
 </div>
 <DefaultParagraph
   label="Now's the time to add some questions! Please follow the amount guide below."
 />
-<div class="w-[25%] h-6 bg-red-400 rounded-md flex flex-row space-x-0">
-  <div class="w-[20%] h-6 bg-green-200 rounded-md z-0">
+<div class="w-[25%] h-6 bg-red-400 rounded-sm flex flex-row space-x-0 relative">
+  <!--increase each by 0.83 MAX 25-->
+  <div class="w-[24.9%] h-6 bg-green-200 rounded-sm rounded-r-none">
   </div>
-  <span class="h-8 w-[2px] rounded-md bg-white"><p class="translate-y-7 text-white">Minimum</p></span>
-  <div class="w-[20%] h-6 bg-blue-200 rounded-md">
+
+  <!--increase each by 0.3125 MAX 25-->
+  <div class="w-[25%] h-6 bg-blue-200 rounded-none">
 
   </div>
-  <span class="h-8 w-[2px] rounded-md bg-white"><p class="translate-y-7 text-white">Recommended</p></span>
-  <div class="w-[59%] h-6 bg-slate-200 rounded-md z-0">
+  <!--increase each by 0.1 MAX 50-->
+  <div class="w-[25%] h-6 bg-slate-200 rounded-sm rounded-l-none">
 
   </div>
-  <span class="h-8 w-[2px] rounded-md bg-white"><p class="translate-y-7 text-white">Max</p></span>
+  <span class="absolute h-8 w-[2px] rounded-md bg-white right-3/4"><p class="translate-y-7 text-white">Min</p></span>
+  <span class="absolute h-8 w-[2px] rounded-md bg-white right-1/2"><p class="translate-y-7 text-white">Recommended</p></span>
+  <span class="absolute h-8 w-[2px] rounded-md bg-white right-0"><p class="translate-y-7 text-white">Max</p></span>
 </div>
+<div class="w-100% h-4"></div>
+
+<PurpleFillButton textSize="md" label="+ Add Question" clickAction={dialogOpen}></PurpleFillButton>
+
+<dialog class="backdrop:backdrop-blur-sm justify-center transition-all duration-300 ease-in absolute h-auto w-1/2">
+  <button onclick={dialogClose}>Close</button>
+  <p>This modal dialog has a groovy backdrop!</p>
+</dialog>
+
+
 <BlueButton textSize="md" label="Continue" disabledState={questionSetName == ""}
 ></BlueButton>
+
