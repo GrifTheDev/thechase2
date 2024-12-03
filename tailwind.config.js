@@ -1,3 +1,5 @@
+import plugin from 'tailwindcss/plugin';
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./src/**/*.{html,js,svelte,ts}'],
@@ -64,6 +66,12 @@ export default {
       },
     },
   },
-  plugins: [],
+  // * Since writing long classes every time I want to change the bg of a filled progress bar gets tiring,
+  // * I've found a plugin written by user osbre on GitHub that helps with simplifying this issue:
+  // * https://github.com/tailwindlabs/tailwindcss/discussions/3921#discussioncomment-7383676
+  plugins: [plugin(function ({addVariant}) {
+    addVariant('progress-unfilled', ['&::-webkit-progress-bar', '&']);
+    addVariant('progress-filled', ['&::-webkit-progress-value', '&::-moz-progress-bar']);
+})],
 }
 

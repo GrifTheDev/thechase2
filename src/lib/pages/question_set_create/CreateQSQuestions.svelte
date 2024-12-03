@@ -42,23 +42,17 @@
 <DefaultParagraph
   label="Now's the time to add some questions! Please follow the amount guide below."
 />
-<div class="w-[25%] h-6 bg-red-400 rounded-sm flex flex-row space-x-0 relative">
-  <!--increase each by 0.83 MAX 25-->
-  <div class="w-[24.9%] h-6 bg-green-200 rounded-sm rounded-r-none">
-  </div>
 
-  <!--increase each by 0.3125 MAX 25-->
-  <div class="w-[25%] h-6 bg-blue-200 rounded-none">
-
-  </div>
-  <!--increase each by 0.1 MAX 50-->
-  <div class="w-[25%] h-6 bg-slate-200 rounded-sm rounded-l-none">
-
-  </div>
-  <span class="absolute h-8 w-[2px] rounded-md bg-white right-3/4"><p class="translate-y-7 text-white">Min</p></span>
-  <span class="absolute h-8 w-[2px] rounded-md bg-white right-1/2"><p class="translate-y-7 text-white">Recommended</p></span>
-  <span class="absolute h-8 w-[2px] rounded-md bg-white right-0"><p class="translate-y-7 text-white">Max</p></span>
+<div class="w-[25%] h-6 bg-red-400 rounded-sm flex flex-row bg-opacity-50 relative">
+  <progress value="100" max="100" class="progress-filled:bg-red-700 bg-transparent w-1/6"> 32% </progress>
+  <span class="h-8 w-[2px] rounded-md bg-white"><p class="translate-y-7 text-white">Minimum</p></span>
+  <progress value="0" max="100" class="progress-filled:bg-green-400 bg-transparent w-1/3"> 32% </progress>
+  <span class="h-8 w-[2px] rounded-md bg-white"><p class="translate-y-7 text-white">Recommended</p></span>
+  <progress value="0" max="100" class="progress-filled:bg-slate-500 bg-transparent w-1/2"> 32% </progress>
+  <span class="absolute right-0 h-8 w-[2px] rounded-md bg-white"><p class="translate-y-7 text-white">Maximum</p></span>
 </div>
+
+
 <div class="w-100% h-4"></div>
 
 <PurpleFillButton textSize="md" label="+ Add Question" clickAction={dialogOpen}></PurpleFillButton>
