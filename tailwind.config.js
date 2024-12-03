@@ -29,19 +29,7 @@ export default {
           '0%': { "transform": 'scale(1.05) rotate(0.7deg)', "background-color": "white", "color": "black", "box-shadow": "0px 0px 0px 0px #FFFFFF" },
           '100%': { "transform": 'scale(0.95) rotate(-0.7deg)', "background-color": "white", "color": "black", "box-shadow": "0px 0px 15px 4px #FFFFFF" },
         },
-        buttonQuestionSetCreateNextKeyframesFull: {
-          '0%': { "transform": 'scale(1.2)', "opacity": "0%"},
-          '50%': {"transform": 'scale(0.8)'},
-          '75%': {"transform": 'scale(1.1)'},
-          '100%': { "transform": 'scale(1)', "opacity": "100%"},
-        },
-        buttonQuestionSetCreateNextKeyframesEmpty: {
-          '100%': { "transform": 'scale(1.1)', "opacity": "0%"},
-          '75%': {"transform": 'scale(1.2)'},
-          '50%': {"transform": 'scale(0.9)'},
-          '0%': { "transform": 'scale(1)', "opacity": "100%"},
-        },
-        buttonHoverKeyFramesGeneric: {
+          buttonHoverKeyFramesGeneric: {
           '0%': { "transform": 'scale(1)'},
           '100%': { "transform": 'scale(1.05) rotate(0.7deg)'},
         },
@@ -53,19 +41,21 @@ export default {
           '0%': { "transform": 'scale(1.05) rotate(0.7deg)'},
           '100%': { "transform": 'scale(0.95) rotate(-0.7deg)'},
         },
-      },
+        modalSpawnK: {
+          '0%': { "backdrop-filter": "blur(0px)", "opacity": "0"},
+          '100%': { "backdrop-filter": "blur(3px)", "opacity": "1"},
+        }
+      
+    },
       animation: {
         buttonHover: "buttonHoverKeyFrames 0.3s ease-in-out forwards",
         buttonUnHover: "buttonUnHoverKeyFrames 0.3s ease-in-out forwards",
         buttonActivate: "buttonActivateKeyframes 0.15s ease-in-out forwards",
-        buttonQuestionSetCreateNext: "buttonQuestionSetCreateNextKeyframesFull 0.5s ease-in",
-        buttonQuestionSetCreateRemove: "buttonQuestionSetCreateNextKeyframesEmpty 0.5s ease-out forwards",
-        buttonQuestionSetHover: "buttonHoverKeyFramesGeneric 0.3s ease-in-out forwards",
-        buttonQuestionSetUnHover: "buttonUnHoverKeyFramesGeneric 0.3s ease-in-out forwards",
-        buttonQuestionSetActivate: "buttonActivateKeyframesGeneric 0.3s ease-in-out forwards"
+        modalSpawn: "modalSpawnK 0.3s ease-in-out forwards"
       },
     },
   },
+
   // * Since writing long classes every time I want to change the bg of a filled progress bar gets tiring,
   // * I've found a plugin written by user osbre on GitHub that helps with simplifying this issue:
   // * https://github.com/tailwindlabs/tailwindcss/discussions/3921#discussioncomment-7383676

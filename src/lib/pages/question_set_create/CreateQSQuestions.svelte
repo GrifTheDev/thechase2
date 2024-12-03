@@ -7,6 +7,7 @@
   import BlueButton from "$lib/components/buttons/BlueButton.svelte";
   import PurpleFillButton from "$lib/components/buttons/PurpleFillButton.svelte";
   import { browser } from "$app/environment";
+  import Heading0 from "$lib/components/headings/Heading0.svelte";
 
   let randomName = `How about ${randomProjectName()}?`;
   let questionSetName = $state("");
@@ -56,10 +57,14 @@
 <div class="w-100% h-4"></div>
 
 <PurpleFillButton textSize="md" label="+ Add Question" clickAction={dialogOpen}></PurpleFillButton>
+<dialog class="bg-transparent overflow-hidden w-[100%] h-[100%] open:animate-modalSpawn">
+  <div class="w-screen h-screen flex justify-center space-y-3 items-center">
+    <div class="bg-slate-500 w-1/2 h-1/2 p-4 flex flex-col justify-center space-y-3 items-center">
+      <Heading0 label="This is a test"/>
 
-<dialog class="backdrop:backdrop-blur-sm justify-center transition-all duration-300 ease-in absolute h-auto w-1/2">
-  <button onclick={dialogClose}>Close</button>
-  <p>This modal dialog has a groovy backdrop!</p>
+      <BlueButton label="Exit" textSize="md" clickAction={dialogClose}/>
+    </div>
+  </div>
 </dialog>
 
 
