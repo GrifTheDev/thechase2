@@ -8,6 +8,8 @@
   import PurpleFillButton from "$lib/components/buttons/PurpleFillButton.svelte";
   import { browser } from "$app/environment";
   import Heading0 from "$lib/components/headings/Heading0.svelte";
+  import DefaultButton from "$lib/components/buttons/DefaultButton.svelte";
+  import RedButton from "$lib/components/buttons/RedButton.svelte";
 
   let randomName = `How about ${randomProjectName()}?`;
   let questionSetName = $state("");
@@ -56,13 +58,58 @@
 
 <div class="w-100% h-4"></div>
 
+
+
 <PurpleFillButton textSize="md" label="+ Add Question" clickAction={dialogOpen}></PurpleFillButton>
 <dialog class="bg-transparent overflow-hidden w-[100%] h-[100%] open:animate-modalSpawn">
   <div class="w-screen h-screen flex justify-center space-y-3 items-center">
-    <div class="bg-slate-500 w-1/2 h-1/2 p-4 flex flex-col justify-center space-y-3 items-center">
-      <Heading0 label="This is a test"/>
+    <div class="bg-nav-bg w-1/2 h-2/3 p-4 space-y-2 flex flex-col rounded-lg">
+      <div class="text-center border-b pb-2 border-white">
+        <Heading1 label="Create Question"/>
+      </div>
+      
+      <p class="text-white font-light">Question</p>
+      <textarea
+      class="rounded-lg w-100% pl-2 pr-11 pb-0 text-lg text-white font-light border-2 border-gray-400 bg-transparent focus:outline-none"
+      placeholder="Time for you to write a question. Make it a good one!"
+      ></textarea>
 
-      <BlueButton label="Exit" textSize="md" clickAction={dialogClose}/>
+      <p class="text-white font-light">Answers</p>
+      <div class="flex flex-row space-x-3">
+
+      
+      <input
+      class="static rounded-[3px] w-1/3 h-10 pl-2 pr-11 text-lg text-white font-light border-b-2 border-gray-400 bg-transparent focus:outline-none"
+      type="text"
+      placeholder="Answer A"
+      />
+      <input
+      class="static rounded-[3px] w-1/3 h-10 pl-2 pr-11 text-lg text-white font-light border-b-2 border-gray-400 bg-transparent focus:outline-none"
+      type="text"
+      placeholder="Answer B"
+      />
+      <input
+      class="static rounded-[3px] w-1/3 h-10 pl-2 pr-11 text-lg text-white font-light border-b-2 border-gray-400 bg-transparent focus:outline-none"
+      type="text"
+      placeholder="Answer C"
+      />
+    </div>
+
+    
+    <div class="flex flex-col justify-center items-center pt-1a">
+    <select class="h-10 w-1/3 bg-transparent border-white border rounded-[3px] text-white text-center font-thin" placeholder="There can only be one!">
+      <option value="dnp" class="text-gray-400 opacity-50" selected>Choose the correct answer</option>
+      <option value="a">A</option>
+      <option value="b">B</option>
+      <option value="c">C</option>
+    </select>
+    </div>
+    <div class="flex flex-grow"></div>
+    <div class="flex flex-row space-x-1 m-auto">
+      <DefaultButton label="Add Question" textSize="md" clickAction={dialogClose} disabledState={true}/>
+      <RedButton label="Exit" textSize="md" clickAction={dialogClose}/>
+    </div>
+      
     </div>
   </div>
 </dialog>

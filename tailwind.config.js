@@ -11,7 +11,8 @@ export default {
       },
       boxShadow: {
         // x, y, radius, spread, color
-        "whiteGlow": "0 0px 6px -1px rgba(255, 255, 255)"
+        "whiteGlow": "0 0px 6px -1px rgba(255, 255, 255)",
+        "whiteGlowPlus": "0 0px 11px -1px rgba(255, 255, 255)",
       },
       fontFamily: {
         "dm-sans": ["DMSans", "sans-serif"]
