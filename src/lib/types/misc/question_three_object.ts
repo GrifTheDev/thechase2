@@ -1,4 +1,4 @@
-interface QuestionObject {
+interface QuestionsThreeObject {
     label: string,
     answerA: string,
     answerB: string,
@@ -6,4 +6,4 @@ interface QuestionObject {
     correctAnswer: "A" | "B" | "C" | ""
 }
 
-export type {QuestionObject}
+export type {QuestionsThreeObject}

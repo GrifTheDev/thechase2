@@ -1,4 +1,4 @@
-type UserAccessType = "read" | "write" | "readwrite";
+type UserAccessType = "read" | "readwrite";
 type DBCollectionName = "question_sets" | "users";
 interface ScopedDBCollectionPermissionObject { access: UserAccessType, docs: Array<string> }
 

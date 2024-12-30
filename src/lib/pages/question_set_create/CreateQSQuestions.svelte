@@ -1,19 +1,14 @@
 <script lang="ts">
   import Heading1 from "$lib/components/headings/Heading1.svelte";
   import DefaultParagraph from "$lib/components/paragraphs/DefaultParagraph.svelte";
-  import { randomProjectName } from "$lib/utils/random_project_name_gen";
-  import Fa from "svelte-fa";
-  import { faDice } from "@fortawesome/free-solid-svg-icons";
   import BlueButton from "$lib/components/buttons/BlueButton.svelte";
   import PurpleFillButton from "$lib/components/buttons/PurpleFillButton.svelte";
   import { browser } from "$app/environment";
-  import Heading0 from "$lib/components/headings/Heading0.svelte";
-  import DefaultButton from "$lib/components/buttons/DefaultButton.svelte";
   import RedButton from "$lib/components/buttons/RedButton.svelte";
-  import type { QuestionObject } from "$lib/types/misc/question_object";
+  import type { QuestionsThreeObject } from "$lib/types/misc/question_three_object";
   import { PUBLIC_QUESTION_ANSWER_LENGTH } from "$env/static/public";
 
-  let currentInputQuestions: QuestionObject = $state({
+  let currentInputQuestions: QuestionsThreeObject = $state({
     label: "",
     answerA: "",
     answerB: "",
@@ -42,6 +37,15 @@
       const dialog = document.querySelector("dialog");
       dialog?.close();
     }
+  }
+
+  async function submitNewQuestionToSet() {
+    // TODO add some loading while this fetches.
+    await fetch("/api/question_sets/create", {
+      method: "POST",
+      body: JSON.stringify({questionSetObject: currentInputQuestions})
+    })
+    dialogClose()
   }
 </script>
 
@@ -182,7 +186,7 @@
         <BlueButton
           label="Add Question"
           textSize="md"
-          clickAction={dialogClose}
+          clickAction={submitNewQuestionToSet}
           disabledState={Object.values(currentInputQuestions).includes("")}
         />
         <RedButton label="Exit" textSize="md" clickAction={dialogClose} />
