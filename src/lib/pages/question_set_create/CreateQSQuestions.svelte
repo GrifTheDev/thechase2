@@ -11,14 +11,7 @@
   import DefaultButton from "$lib/components/buttons/DefaultButton.svelte";
   import RedButton from "$lib/components/buttons/RedButton.svelte";
   import type { QuestionObject } from "$lib/types/misc/question_object";
-
-  let randomName = `How about ${randomProjectName()}?`;
-  let questionSetName = $state("");
-
-  let maxQuestionAmount = 500;
-  let requiredQuestionAmount = 30;
-  let recommendedQuestionAmount = 80;
-  let questionsAdded = $state(0);
+  import { PUBLIC_QUESTION_ANSWER_LENGTH } from "$env/static/public";
 
   let currentInputQuestions: QuestionObject = $state({
     label: "",
@@ -28,6 +21,15 @@
     correctAnswer: "",
   });
 
+  let answerLengths = $derived([
+    Number(PUBLIC_QUESTION_ANSWER_LENGTH) -
+      currentInputQuestions.answerA.length,
+    Number(PUBLIC_QUESTION_ANSWER_LENGTH) -
+      currentInputQuestions.answerB.length,
+    Number(PUBLIC_QUESTION_ANSWER_LENGTH) -
+      currentInputQuestions.answerC.length,
+  ]);
+  
   function dialogOpen() {
     if (browser) {
       const dialog = document.querySelector("dialog");
@@ -114,40 +116,49 @@
       <p class="text-white font-light">Answers</p>
       <div class="flex flex-row justify-center space-x-3">
         <div class="relative">
-          <p class="absolute top-1/2 -translate-y-1/2 transform right-3 text-white shadow-lg">30</p>
+          <p
+            class="absolute top-1/2 -translate-y-1/2 transform right-3 text-white shadow-lg"
+          >
+            {answerLengths[0]}
+          </p>
           <input
-          class="static rounded-[3px] h-10 pl-2 pr-9 text-lg text-white font-light border-b-2 border-gray-400 bg-transparent focus:outline-none"
-          type="text"
-          placeholder="Answer A"
-          maxlength=30
-          bind:value={currentInputQuestions.answerA}
+            class="static rounded-[3px] h-10 pl-2 pr-9 text-lg text-white font-light border-b-2 border-gray-400 bg-transparent focus:outline-none"
+            type="text"
+            placeholder="Answer A"
+            maxlength="30"
+            bind:value={currentInputQuestions.answerA}
           />
-         
         </div>
 
         <div class="relative">
-          <p class="absolute top-1/2 transform -translate-y-1/2 right-3 text-white">30</p>
+          <p
+            class="absolute top-1/2 transform -translate-y-1/2 right-3 text-white"
+          >
+            {answerLengths[1]}
+          </p>
           <input
-          class="static rounded-[3px] h-10 pl-2 pr-9 text-lg text-white font-light border-b-2 border-gray-400 bg-transparent focus:outline-none"
-          type="text"
-          placeholder="Answer B"
-          bind:value={currentInputQuestions.answerB}
-        />
-         
+            class="static rounded-[3px] h-10 pl-2 pr-9 text-lg text-white font-light border-b-2 border-gray-400 bg-transparent focus:outline-none"
+            type="text"
+            placeholder="Answer B"
+            maxlength="30"
+            bind:value={currentInputQuestions.answerB}
+          />
         </div>
-        
+
         <div class="relative">
-          <p class="absolute top-1/2 transform -translate-y-1/2 right-3 text-white">30</p>
+          <p
+            class="absolute top-1/2 transform -translate-y-1/2 right-3 text-white"
+          >
+            {answerLengths[2]}
+          </p>
           <input
-          class="static rounded-[3px] h-10 pl-2 pr-9 text-lg text-white font-light border-b-2 border-gray-400 bg-transparent focus:outline-none"
-          type="text"
-          placeholder="Answer C"
-          bind:value={currentInputQuestions.answerC}
-        />
-         
+            class="static rounded-[3px] h-10 pl-2 pr-9 text-lg text-white font-light border-b-2 border-gray-400 bg-transparent focus:outline-none"
+            type="text"
+            placeholder="Answer C"
+            maxlength="30"
+            bind:value={currentInputQuestions.answerC}
+          />
         </div>
-        
-       
       </div>
 
       <div class="flex flex-col justify-center items-center pt-1a">
@@ -165,7 +176,7 @@
         </select>
       </div>
       <p class="text-white">{JSON.stringify(currentInputQuestions)}</p>
-      
+
       <div class="flex flex-grow"></div>
       <div class="flex flex-row space-x-1 m-auto">
         <DefaultButton
@@ -180,5 +191,4 @@
   </div>
 </dialog>
 
-<BlueButton textSize="md" label="Continue" disabledState={questionSetName == ""}
-></BlueButton>
+<BlueButton textSize="md" label="Continue" disabledState={true}></BlueButton>
