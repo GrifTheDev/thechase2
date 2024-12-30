@@ -179,11 +179,11 @@
 
       <div class="flex flex-grow"></div>
       <div class="flex flex-row space-x-1 m-auto">
-        <DefaultButton
+        <BlueButton
           label="Add Question"
           textSize="md"
           clickAction={dialogClose}
-          disabledState={true}
+          disabledState={Object.values(currentInputQuestions).includes("")}
         />
         <RedButton label="Exit" textSize="md" clickAction={dialogClose} />
       </div>
