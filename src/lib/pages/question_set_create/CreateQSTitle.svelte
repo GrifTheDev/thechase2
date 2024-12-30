@@ -35,7 +35,7 @@
     role="button"
   >
     <Fa
-      class="absolute top-1/2 transform -translate-y-1/2 right-3 hover:scale-110 active:scale-90"
+      class="absolute top-1/2 transform -translate-y-1/2 right-3 transition-all hover:scale-110 active:scale-90"
       icon={faDice}
       color="#FFFFFF"
       size="lg"
