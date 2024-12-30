@@ -6,9 +6,35 @@
   import { faDice } from "@fortawesome/free-solid-svg-icons";
   import BlueButton from "$lib/components/buttons/BlueButton.svelte";
   import { qSetCreation } from "$lib/states/question_set_creation.svelte"
+  import type { QuestionSetType } from "$lib/types/database/question_sets";
+  import type { ServerResponseType } from "$lib/types/misc/server_response";
 
   let randomName = `How about ${randomProjectName()}?`;
   let questionSetName = $state("");
+  let notice = $state({type: "", message: ""}) // TODO type this in case I end up using it more throughout.
+
+  async function createQSAndAdvance() {
+    let questionSetCreationDataObject: QuestionSetType = {
+      title: questionSetName,
+      meetsCriteria: false,
+      questions_open: [],
+      questions_three: []
+    }
+    const res = await fetch("/api/question_sets/create", {
+      method: "POST",
+      body: JSON.stringify(questionSetCreationDataObject)
+    })
+
+    const data: ServerResponseType = await res.json()
+    if (data.code == 403) {
+      notice.type = "err"
+      notice.message = `[${data.code}] ${data.message}`
+    } else {
+      qSetCreation.progress = 2
+    }
+
+    
+  }
 </script>
 
 <div class="flex flex-row justify-center items-center space-x-1">
@@ -47,6 +73,10 @@
     placeholder={randomName}
     bind:value={questionSetName}
   />
+
 </div>
-<!---->
-<BlueButton textSize="md" label="Continue" disabledState={questionSetName == ""} clickAction={() => {qSetCreation.progress = 2}} ></BlueButton>
+{#if notice.message != ""}
+  <p class="text-center text-red-400">{notice.message}</p>
+{/if}
+
+<BlueButton textSize="md" label="Continue" disabledState={questionSetName == ""} clickAction={createQSAndAdvance} ></BlueButton>
