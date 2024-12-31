@@ -8,9 +8,20 @@
   import type { QuestionsThreeObject } from "$lib/types/misc/question_three_object";
   import { PUBLIC_QUESTION_ANSWER_LENGTH } from "$env/static/public";
   import GreenButton from "$lib/components/buttons/GreenButton.svelte";
+  import type { QuestionSetType } from "$lib/types/database/question_sets";
 
   let questionsToSave: Array<QuestionsThreeObject> = $state([]);
+  let localStorageQuestions: Array<QuestionsThreeObject> = $state([]);
 
+  if (browser) {
+    // @ts-ignore
+    // * JSON.parse(null) will return null which is exactly what I need, just can't find a way
+    // * for TS to understand this.
+    const questionSetCreationObject: QuestionSetType = JSON.parse(localStorage.getItem("QSCP"));
+    if (questionSetCreationObject != null) {
+      localStorageQuestions = questionSetCreationObject.questions_three;
+    }
+  }
   let currentInputQuestions: QuestionsThreeObject = $state({
     label: "",
     answerA: "",
@@ -48,10 +59,18 @@
       method: "POST",
       body: JSON.stringify({questionSetObject: currentInputQuestions})
     }) */
-    questionsToSave.push(currentInputQuestions);
+
+    questionsToSave.push({
+      label: currentInputQuestions.label,
+      answerA: currentInputQuestions.answerA,
+      answerB: currentInputQuestions.answerB,
+      answerC: currentInputQuestions.answerC,
+      correctAnswer: currentInputQuestions.correctAnswer,
+    });
     // @ts-ignore
     // TODO I have no idea why TS keeps throwing a fit about this being an implicit any type.
     for (var member in currentInputQuestions) currentInputQuestions[member] = "";
+      
     dialogClose();
   }
 </script>
@@ -238,6 +257,44 @@
     </div>
   </div>
 </dialog>
+
+<table class="w-full text-white text-center font-regular">
+  <thead class="bg-gray-900 font-light text-md">
+    <tr>
+      <th class="py-2"> Question </th>
+      <th class="py-2"> Answer A </th>
+      <th class="py-2"> Answer B </th>
+      <th class="py-2"> Answer C </th>
+      <th class="py-2"> Correct Answer </th>
+    </tr>
+  </thead>
+  <tbody class="text-md">
+    {#each questionsToSave as q, i}
+      <tr class="bg-red-400 bg-opacity-75 border-b border-gray-700">
+        <td class="py-2 px-2 break-all">
+          {q.label}
+        </td>
+        <td class="py-2 px-2 break-all">{q.answerA}</td>
+        <td class="py-2 px-2 break-all">{q.answerB}</td>
+        <td class="py-2 px-2 break-all">{q.answerC}</td>
+        <td class="py-2 px-2 break-all">{q.correctAnswer}</td>
+      </tr>
+    {/each}
+
+    {#each localStorageQuestions as l, i}
+      <tr class="bg-gray-800 border-b border-gray-700">
+        <td class="py-2 px-2 break-all">
+          {l.label}
+        </td>
+        <td class="py-2 px-2 break-all">{l.answerA}</td>
+        <td class="py-2 px-2 break-all">{l.answerB}</td>
+        <td class="py-2 px-2 break-all">{l.answerC}</td>
+        <td class="py-2 px-2 break-all">{l.correctAnswer}</td>
+      </tr>
+    {/each}
+  </tbody>
+</table>
+<p class="text-white">{JSON.stringify(questionsToSave)}</p>
 
 <div class="flex flex-row space-x-3 items-center justify-center">
   <BlueButton textSize="md" label="Continue" disabledState={true}></BlueButton>
