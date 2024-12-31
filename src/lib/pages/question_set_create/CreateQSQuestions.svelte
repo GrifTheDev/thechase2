@@ -261,7 +261,7 @@
 <table class="w-full text-white text-center font-regular">
   <thead class="bg-gray-900 font-light text-md">
     <tr>
-      <th class="py-2"> Question </th>
+      <th class="py-2"> Question {questionsToSave.length > 0 ? `(You have ${questionsToSave.length} unsaved question${questionsToSave.length == 1 ? "" : "s"}!)` : ""} </th>
       <th class="py-2"> Answer A </th>
       <th class="py-2"> Answer B </th>
       <th class="py-2"> Answer C </th>
