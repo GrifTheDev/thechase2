@@ -7,6 +7,7 @@ import type { AccessTokenPayloadType } from "$lib/types/tokens/access_token";
 import type { ServerResponseType } from "$lib/types/misc/server_response";
 import { updateQuestionSetsData } from "$lib/database/database";
 import { generateRandomBase64String } from "$lib/server/auth/utilities";
+import { updateUserPermissions } from "$lib/server/auth/permissions";
 
 // * For future reference:
 // * Since middleware handles authentication check and runs on every request
@@ -23,7 +24,9 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
   }
 
   const authToken = cookies.get("AccessToken")
+  const refreshToken = cookies.get("RefreshToken")
   if (authToken == undefined) return Response.json({ code: 500, message: "Internal service error" });
+  if (refreshToken == undefined) return Response.json({ code: 500, message: "Internal service error" })
 
   // * Once again, this here verification is to GET the data encoded in the token.
   // * This step here is not used to VERIFY the token, that job was done in middleware.
@@ -35,12 +38,28 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
   // * You have the permission to create a question set! YAY!
   const questionSetID = generateRandomBase64String(24)
+  questionSetID.replaceAll("/", "") // *Just in case the random gen gives us a /.
   await updateQuestionSetsData(questionSetID, {
     title: title,
     meetsCriteria: meetsCriteria,
     questions_open: questions_open,
     questions_three: questions_three
   })
+
+  // * Since permission data is embeded in the access_token we need to update it as well.
+  const newTokenPair = await updateUserPermissions("question_sets", questionSetID, "readwrite", {accessToken: authToken, refreshToken: refreshToken})
+
+  cookies.set("AccessToken", newTokenPair.accessToken, {
+    secure: true,
+    path: "/",
+    sameSite: "strict",
+  });
+
+  cookies.set("RefreshToken", newTokenPair.refreshToken, {
+    secure: true,
+    path: "/",
+    sameSite: "strict",
+  });
 
   return Response.json(responseObject);
 
