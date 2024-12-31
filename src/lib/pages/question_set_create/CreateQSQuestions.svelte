@@ -7,6 +7,9 @@
   import RedButton from "$lib/components/buttons/RedButton.svelte";
   import type { QuestionsThreeObject } from "$lib/types/misc/question_three_object";
   import { PUBLIC_QUESTION_ANSWER_LENGTH } from "$env/static/public";
+  import GreenButton from "$lib/components/buttons/GreenButton.svelte";
+
+  let questionsToSave: Array<QuestionsThreeObject> = $state([]);
 
   let currentInputQuestions: QuestionsThreeObject = $state({
     label: "",
@@ -24,7 +27,7 @@
     Number(PUBLIC_QUESTION_ANSWER_LENGTH) -
       currentInputQuestions.answerC.length,
   ]);
-  
+
   function dialogOpen() {
     if (browser) {
       const dialog = document.querySelector("dialog");
@@ -41,11 +44,15 @@
 
   async function submitNewQuestionToSet() {
     // TODO add some loading while this fetches.
-    await fetch("/api/question_sets/create", {
+    /* await fetch("/api/question_sets/add_questions", {
       method: "POST",
       body: JSON.stringify({questionSetObject: currentInputQuestions})
-    })
-    dialogClose()
+    }) */
+    questionsToSave.push(currentInputQuestions);
+    // @ts-ignore
+    // TODO I have no idea why TS keeps throwing a fit about this being an implicit any type.
+    for (var member in currentInputQuestions) currentInputQuestions[member] = "";
+    dialogClose();
   }
 </script>
 
@@ -119,7 +126,6 @@
 
       <p class="text-white font-light">Answers</p>
       <div class="flex flex-row justify-center space-x-3">
-
         <div class="flex flex-col justify-center space-y-3">
           <div class="relative">
             <p
@@ -135,11 +141,22 @@
               bind:value={currentInputQuestions.answerA}
             />
           </div>
-          <button onclick={() => {currentInputQuestions.correctAnswer = "A"}} class="h-10 border-white border rounded-[3px] text-center font-thin transition-colors {currentInputQuestions.correctAnswer == "A" ? "bg-white text-black font-normal" : currentInputQuestions.correctAnswer == "" ? "text-white bg-transparent" : "opacity-50"} text-white bg-transparent active:bg-white active:text-black">
-            {currentInputQuestions.correctAnswer == "A" ? "Correct Answer" : "Mark as Correct Answer"}
-          </button> 
+          <button
+            onclick={() => {
+              currentInputQuestions.correctAnswer = "A";
+            }}
+            class="h-10 border-white border rounded-[3px] text-center font-thin transition-colors {currentInputQuestions.correctAnswer ==
+            'A'
+              ? 'bg-white text-black font-normal'
+              : currentInputQuestions.correctAnswer == ''
+                ? 'text-white bg-transparent'
+                : 'opacity-50'} text-white bg-transparent active:bg-white active:text-black"
+          >
+            {currentInputQuestions.correctAnswer == "A"
+              ? "Correct Answer"
+              : "Mark as Correct Answer"}
+          </button>
         </div>
-        
 
         <div class="flex flex-col justify-center space-y-3">
           <div class="relative">
@@ -156,9 +173,21 @@
               bind:value={currentInputQuestions.answerB}
             />
           </div>
-          <button onclick={() => {currentInputQuestions.correctAnswer = "B"}} class="h-10 border-white border rounded-[3px] text-center font-thin transition-colors {currentInputQuestions.correctAnswer == "B" ? "bg-white text-black font-normal" : currentInputQuestions.correctAnswer == "" ? "text-white bg-transparent" : "opacity-50"} text-white bg-transparent active:bg-white active:text-black">
-            {currentInputQuestions.correctAnswer == "B" ? "Correct Answer" : "Mark as Correct Answer"}
-          </button> 
+          <button
+            onclick={() => {
+              currentInputQuestions.correctAnswer = "B";
+            }}
+            class="h-10 border-white border rounded-[3px] text-center font-thin transition-colors {currentInputQuestions.correctAnswer ==
+            'B'
+              ? 'bg-white text-black font-normal'
+              : currentInputQuestions.correctAnswer == ''
+                ? 'text-white bg-transparent'
+                : 'opacity-50'} text-white bg-transparent active:bg-white active:text-black"
+          >
+            {currentInputQuestions.correctAnswer == "B"
+              ? "Correct Answer"
+              : "Mark as Correct Answer"}
+          </button>
         </div>
 
         <div class="flex flex-col justify-center space-y-3">
@@ -176,12 +205,24 @@
               bind:value={currentInputQuestions.answerC}
             />
           </div>
-          <button onclick={() => {currentInputQuestions.correctAnswer = "C"}} class="h-10 border-white border rounded-[3px] text-center font-thin transition-colors {currentInputQuestions.correctAnswer == "C" ? "bg-white text-black font-normal" : currentInputQuestions.correctAnswer == "" ? "text-white bg-transparent" : "opacity-50"} text-white bg-transparent active:bg-white active:text-black">
-            {currentInputQuestions.correctAnswer == "C" ? "Correct Answer" : "Mark as Correct Answer"}
-          </button> 
+          <button
+            onclick={() => {
+              currentInputQuestions.correctAnswer = "C";
+            }}
+            class="h-10 border-white border rounded-[3px] text-center font-thin transition-colors {currentInputQuestions.correctAnswer ==
+            'C'
+              ? 'bg-white text-black font-normal'
+              : currentInputQuestions.correctAnswer == ''
+                ? 'text-white bg-transparent'
+                : 'opacity-50'} text-white bg-transparent active:bg-white active:text-black"
+          >
+            {currentInputQuestions.correctAnswer == "C"
+              ? "Correct Answer"
+              : "Mark as Correct Answer"}
+          </button>
         </div>
       </div>
-      
+
       <p class="text-white">{JSON.stringify(currentInputQuestions)}</p>
 
       <div class="flex flex-grow"></div>
@@ -198,4 +239,12 @@
   </div>
 </dialog>
 
-<BlueButton textSize="md" label="Continue" disabledState={true}></BlueButton>
+<div class="flex flex-row space-x-3 items-center justify-center">
+  <BlueButton textSize="md" label="Continue" disabledState={true}></BlueButton>
+  <GreenButton
+    title={questionsToSave.length > 0 ? "You have changes to save!" : ""}
+    textSize="md"
+    label="Save"
+    disabledState={questionsToSave.length == 0}
+  ></GreenButton>
+</div>
