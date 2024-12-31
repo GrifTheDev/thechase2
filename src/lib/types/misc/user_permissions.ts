@@ -8,4 +8,4 @@ type UserPermissionsType = {
 
 //const a: UserPermissionsType = {"question_sets": {access: "read", docs: ["asd"]}}
 
-export type { UserAccessType, UserPermissionsType };
+export type { UserAccessType, UserPermissionsType, DBCollectionName };

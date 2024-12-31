@@ -17,6 +17,7 @@ import type { UserPermissionsType } from "$lib/types/misc/user_permissions";
 import type { AuthTokenPairType } from "$lib/types/tokens/auth_token_pair";
 import { updateUsersData } from "$lib/database/database";
 
+// ! Can generate strings with "/", which is dangerous for using with firestore.
 function generateRandomBase64String(lengthBytes: number): string {
   return crypto.randomBytes(lengthBytes).toString("base64");
 }
