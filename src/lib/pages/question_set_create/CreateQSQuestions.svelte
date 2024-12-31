@@ -9,6 +9,8 @@
   import { PUBLIC_QUESTION_ANSWER_LENGTH } from "$env/static/public";
   import GreenButton from "$lib/components/buttons/GreenButton.svelte";
   import type { QuestionSetType } from "$lib/types/database/question_sets";
+  import type { ServerResponseType } from "$lib/types/misc/server_response";
+  import { redirect } from "@sveltejs/kit";
 
   let questionsToSave: Array<QuestionsThreeObject> = $state([]);
   let localStorageQuestions: Array<QuestionsThreeObject> = $state([]);
@@ -65,27 +67,33 @@
     // @ts-ignore
     // TODO I have no idea why TS keeps throwing a fit about this being an implicit any type.
     for (var member in currentInputQuestions) currentInputQuestions[member] = "";
-      
+
     dialogClose();
   }
 
   async function submitSavedQuestionsToSet() {
     // * 1. send fetch request and save the batch to DB
-    // * 2. update localstorage.
-    let questionSetID = ""
+    // * 2. update localstorage
+    let questionSetCreationObject: QuestionSetType & { id: string } | null = null;
     if (browser) {
-    // @ts-ignore
-    // * JSON.parse(null) will return null which is exactly what I need, just can't find a way
-    // * for TS to understand this.
-    const questionSetCreationObject: QuestionSetType & {id: string} = JSON.parse(localStorage.getItem("QSCP"));
-    if (questionSetCreationObject != null) {
-      questionSetID = questionSetCreationObject.id
+      // @ts-ignore
+      // * JSON.parse(null) will return null which is exactly what I need, just can't find a way
+      // * for TS to understand this.
+      questionSetCreationObject = JSON.parse(localStorage.getItem("QSCP"));
     }
-  }
-    await fetch("/api/question_sets/add_questions", {
+    if (questionSetCreationObject == null) return console.log("what the fuckk (submitSavedQuestionsToSet)");
+    const req = await fetch("/api/question_sets/add_questions", {
       method: "POST",
-      body: JSON.stringify({id: questionSetID, questions: questionsToSave})
-    }) 
+      body: JSON.stringify({ id: questionSetCreationObject.id, questions: questionsToSave }),
+    });
+
+    const res: ServerResponseType = await req.json();
+    if (res.code == 200 && browser) {
+      questionSetCreationObject.questions_three = [...questionSetCreationObject.questions_three, ...questionsToSave]
+      localStorage.setItem("QSCP", JSON.stringify(questionSetCreationObject));
+      localStorageQuestions = [...questionSetCreationObject.questions_three, ...questionsToSave]
+      questionsToSave = []
+    }
   }
 </script>
 
@@ -115,7 +123,11 @@
     ><p class="translate-y-7 text-white">Minimum</p></span
   >
   <progress
-    value={((questionsToSave.length + localStorageQuestions.length) - 30).toString()}
+    value={(
+      questionsToSave.length +
+      localStorageQuestions.length -
+      30
+    ).toString()}
     max="70"
     class="progress-filled:bg-green-400 bg-transparent w-1/3"
   >
@@ -125,7 +137,11 @@
     ><p class="translate-y-7 text-white">Recommended</p></span
   >
   <progress
-    value={((questionsToSave.length + localStorageQuestions.length) - 100).toString()}
+    value={(
+      questionsToSave.length +
+      localStorageQuestions.length -
+      100
+    ).toString()}
     max="500"
     class="progress-filled:bg-slate-500 bg-transparent w-1/2"
   >
@@ -275,7 +291,11 @@
 <table class="w-full text-white text-center font-regular">
   <thead class="bg-gray-900 font-light text-md">
     <tr>
-      <th class="py-2"> Question {questionsToSave.length > 0 ? `(You have ${questionsToSave.length} unsaved question${questionsToSave.length == 1 ? "" : "s"}!)` : ""} </th>
+      <th class="py-2">
+        Question {questionsToSave.length > 0
+          ? `(You have ${questionsToSave.length} unsaved question${questionsToSave.length == 1 ? "" : "s"}!)`
+          : ""}
+      </th>
       <th class="py-2"> Answer A </th>
       <th class="py-2"> Answer B </th>
       <th class="py-2"> Answer C </th>

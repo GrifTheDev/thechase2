@@ -25,5 +25,11 @@ interface QuestionSetType {
     questions_three: Array<QuestionsThreeObject>,
     progress: number
 }
+interface QuestionSetTypeWrite {
+    title?: string,
+    questions_open?: Array<string>
+    questions_three?: Array<QuestionsThreeObject>,
+    progress?: number
+}
 
-export type {QuestionSetType}
+export type {QuestionSetType, QuestionSetTypeWrite}
