@@ -119,66 +119,69 @@
 
       <p class="text-white font-light">Answers</p>
       <div class="flex flex-row justify-center space-x-3">
-        <div class="relative">
-          <p
-            class="absolute top-1/2 -translate-y-1/2 transform right-3 text-white shadow-lg"
-          >
-            {answerLengths[0]}
-          </p>
-          <input
-            class="static rounded-[3px] h-10 pl-2 pr-9 text-lg text-white font-light border-b-2 border-gray-400 bg-transparent focus:outline-none"
-            type="text"
-            placeholder="Answer A"
-            maxlength="30"
-            bind:value={currentInputQuestions.answerA}
-          />
+
+        <div class="flex flex-col justify-center space-y-3">
+          <div class="relative">
+            <p
+              class="absolute top-1/2 -translate-y-1/2 transform right-3 text-white shadow-lg"
+            >
+              {answerLengths[0]}
+            </p>
+            <input
+              class="static rounded-[3px] h-10 pl-2 pr-9 text-lg text-white font-light border-b-2 border-gray-400 bg-transparent focus:outline-none"
+              type="text"
+              placeholder="Answer A"
+              maxlength="30"
+              bind:value={currentInputQuestions.answerA}
+            />
+          </div>
+          <button onclick={() => {currentInputQuestions.correctAnswer = "A"}} class="h-10 border-white border rounded-[3px] text-center font-thin transition-colors {currentInputQuestions.correctAnswer == "A" ? "bg-white text-black font-normal" : currentInputQuestions.correctAnswer == "" ? "text-white bg-transparent" : "opacity-50"} text-white bg-transparent active:bg-white active:text-black">
+            {currentInputQuestions.correctAnswer == "A" ? "Correct Answer" : "Mark as Correct Answer"}
+          </button> 
+        </div>
+        
+
+        <div class="flex flex-col justify-center space-y-3">
+          <div class="relative">
+            <p
+              class="absolute top-1/2 -translate-y-1/2 transform right-3 text-white shadow-lg"
+            >
+              {answerLengths[1]}
+            </p>
+            <input
+              class="static rounded-[3px] h-10 pl-2 pr-9 text-lg text-white font-light border-b-2 border-gray-400 bg-transparent focus:outline-none"
+              type="text"
+              placeholder="Answer B"
+              maxlength="30"
+              bind:value={currentInputQuestions.answerB}
+            />
+          </div>
+          <button onclick={() => {currentInputQuestions.correctAnswer = "B"}} class="h-10 border-white border rounded-[3px] text-center font-thin transition-colors {currentInputQuestions.correctAnswer == "B" ? "bg-white text-black font-normal" : currentInputQuestions.correctAnswer == "" ? "text-white bg-transparent" : "opacity-50"} text-white bg-transparent active:bg-white active:text-black">
+            {currentInputQuestions.correctAnswer == "B" ? "Correct Answer" : "Mark as Correct Answer"}
+          </button> 
         </div>
 
-        <div class="relative">
-          <p
-            class="absolute top-1/2 transform -translate-y-1/2 right-3 text-white"
-          >
-            {answerLengths[1]}
-          </p>
-          <input
-            class="static rounded-[3px] h-10 pl-2 pr-9 text-lg text-white font-light border-b-2 border-gray-400 bg-transparent focus:outline-none"
-            type="text"
-            placeholder="Answer B"
-            maxlength="30"
-            bind:value={currentInputQuestions.answerB}
-          />
-        </div>
-
-        <div class="relative">
-          <p
-            class="absolute top-1/2 transform -translate-y-1/2 right-3 text-white"
-          >
-            {answerLengths[2]}
-          </p>
-          <input
-            class="static rounded-[3px] h-10 pl-2 pr-9 text-lg text-white font-light border-b-2 border-gray-400 bg-transparent focus:outline-none"
-            type="text"
-            placeholder="Answer C"
-            maxlength="30"
-            bind:value={currentInputQuestions.answerC}
-          />
+        <div class="flex flex-col justify-center space-y-3">
+          <div class="relative">
+            <p
+              class="absolute top-1/2 -translate-y-1/2 transform right-3 text-white shadow-lg"
+            >
+              {answerLengths[2]}
+            </p>
+            <input
+              class="static rounded-[3px] h-10 pl-2 pr-9 text-lg text-white font-light border-b-2 border-gray-400 bg-transparent focus:outline-none"
+              type="text"
+              placeholder="Answer C"
+              maxlength="30"
+              bind:value={currentInputQuestions.answerC}
+            />
+          </div>
+          <button onclick={() => {currentInputQuestions.correctAnswer = "C"}} class="h-10 border-white border rounded-[3px] text-center font-thin transition-colors {currentInputQuestions.correctAnswer == "C" ? "bg-white text-black font-normal" : currentInputQuestions.correctAnswer == "" ? "text-white bg-transparent" : "opacity-50"} text-white bg-transparent active:bg-white active:text-black">
+            {currentInputQuestions.correctAnswer == "C" ? "Correct Answer" : "Mark as Correct Answer"}
+          </button> 
         </div>
       </div>
-
-      <div class="flex flex-col justify-center items-center pt-1a">
-        <select
-          class="h-10 w-1/3 bg-transparent border-white border rounded-[3px] text-white text-center font-thin bg-black"
-          placeholder="There can only be one!"
-          bind:value={currentInputQuestions.correctAnswer}
-        >
-          <option value="" class="text-gray-400 opacity-50" selected
-            >Choose the correct answer</option
-          >
-          <option value="a">A</option>
-          <option value="b">B</option>
-          <option value="c">C</option>
-        </select>
-      </div>
+      
       <p class="text-white">{JSON.stringify(currentInputQuestions)}</p>
 
       <div class="flex flex-grow"></div>
