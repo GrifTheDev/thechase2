@@ -55,11 +55,6 @@
 
   async function submitNewQuestionToSet() {
     // TODO add some loading while this fetches.
-    /* await fetch("/api/question_sets/add_questions", {
-      method: "POST",
-      body: JSON.stringify({questionSetObject: currentInputQuestions})
-    }) */
-
     questionsToSave.push({
       label: currentInputQuestions.label,
       answerA: currentInputQuestions.answerA,
@@ -72,6 +67,25 @@
     for (var member in currentInputQuestions) currentInputQuestions[member] = "";
       
     dialogClose();
+  }
+
+  async function submitSavedQuestionsToSet() {
+    // * 1. send fetch request and save the batch to DB
+    // * 2. update localstorage.
+    let questionSetID = ""
+    if (browser) {
+    // @ts-ignore
+    // * JSON.parse(null) will return null which is exactly what I need, just can't find a way
+    // * for TS to understand this.
+    const questionSetCreationObject: QuestionSetType & {id: string} = JSON.parse(localStorage.getItem("QSCP"));
+    if (questionSetCreationObject != null) {
+      questionSetID = questionSetCreationObject.id
+    }
+  }
+    await fetch("/api/question_sets/add_questions", {
+      method: "POST",
+      body: JSON.stringify({id: questionSetID, questions: questionsToSave})
+    }) 
   }
 </script>
 
@@ -91,8 +105,8 @@
   class="w-[25%] h-6 bg-red-400 rounded-sm flex flex-row bg-opacity-50 relative"
 >
   <progress
-    value="100"
-    max="100"
+    value={(questionsToSave.length + localStorageQuestions.length).toString()}
+    max="30"
     class="progress-filled:bg-red-700 bg-transparent w-1/6"
   >
     32%
@@ -101,8 +115,8 @@
     ><p class="translate-y-7 text-white">Minimum</p></span
   >
   <progress
-    value="0"
-    max="100"
+    value={((questionsToSave.length + localStorageQuestions.length) - 30).toString()}
+    max="70"
     class="progress-filled:bg-green-400 bg-transparent w-1/3"
   >
     32%
@@ -111,8 +125,8 @@
     ><p class="translate-y-7 text-white">Recommended</p></span
   >
   <progress
-    value="0"
-    max="100"
+    value={((questionsToSave.length + localStorageQuestions.length) - 100).toString()}
+    max="500"
     class="progress-filled:bg-slate-500 bg-transparent w-1/2"
   >
     32%
@@ -169,7 +183,7 @@
               ? 'bg-white text-black font-normal'
               : currentInputQuestions.correctAnswer == ''
                 ? 'text-white bg-transparent'
-                : 'opacity-50'} text-white bg-transparent active:bg-white active:text-black"
+                : 'opacity-50 text-white'} bg-transparent active:bg-white active:text-black"
           >
             {currentInputQuestions.correctAnswer == "A"
               ? "Correct Answer"
@@ -201,7 +215,7 @@
               ? 'bg-white text-black font-normal'
               : currentInputQuestions.correctAnswer == ''
                 ? 'text-white bg-transparent'
-                : 'opacity-50'} text-white bg-transparent active:bg-white active:text-black"
+                : 'opacity-50 text-white'} bg-transparent active:bg-white active:text-black"
           >
             {currentInputQuestions.correctAnswer == "B"
               ? "Correct Answer"
@@ -233,7 +247,7 @@
               ? 'bg-white text-black font-normal'
               : currentInputQuestions.correctAnswer == ''
                 ? 'text-white bg-transparent'
-                : 'opacity-50'} text-white bg-transparent active:bg-white active:text-black"
+                : 'opacity-50 text-white'} bg-transparent active:bg-white active:text-black"
           >
             {currentInputQuestions.correctAnswer == "C"
               ? "Correct Answer"
@@ -294,14 +308,15 @@
     {/each}
   </tbody>
 </table>
-<p class="text-white">{JSON.stringify(questionsToSave)}</p>
 
 <div class="flex flex-row space-x-3 items-center justify-center">
   <BlueButton textSize="md" label="Continue" disabledState={true}></BlueButton>
   <GreenButton
     title={questionsToSave.length > 0 ? "You have changes to save!" : ""}
     textSize="md"
+    clickAction={submitSavedQuestionsToSet}
     label="Save"
     disabledState={questionsToSave.length == 0}
   ></GreenButton>
 </div>
+<p class="hidden text-black">p</p>
