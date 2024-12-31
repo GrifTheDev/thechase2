@@ -8,6 +8,7 @@
   import { qSetCreation } from "$lib/states/question_set_creation.svelte"
   import type { QuestionSetType } from "$lib/types/database/question_sets";
   import type { ServerResponseType } from "$lib/types/misc/server_response";
+  import { browser } from "$app/environment";
 
   let randomName = `How about ${randomProjectName()}?`;
   let questionSetName = $state("");
@@ -16,7 +17,7 @@
   async function createQSAndAdvance() {
     let questionSetCreationDataObject: QuestionSetType = {
       title: questionSetName,
-      meetsCriteria: false,
+      progress: 2,
       questions_open: [],
       questions_three: []
     }
@@ -25,11 +26,16 @@
       body: JSON.stringify(questionSetCreationDataObject)
     })
 
-    const data: ServerResponseType = await res.json()
-    if (data.code == 403) {
+    const resData: ServerResponseType = await res.json()
+    if (resData.code != 200) {
       notice.type = "err"
-      notice.message = `[${data.code}] ${data.message}`
+      notice.message = `[${resData.code}] ${resData.message}`
     } else {
+      if (browser) {
+        // @ts-ignore
+        // * The property id does exist on the returned data, I just have no way to let TS know.
+        localStorage.setItem("QSCP", JSON.stringify(Object.assign({id: resData.id}, questionSetCreationDataObject)))
+      }
       qSetCreation.progress = 2
     }
 

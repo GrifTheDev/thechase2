@@ -23,7 +23,7 @@ interface QuestionSetType {
     title: string,
     questions_open: Array<string>
     questions_three: Array<QuestionsThreeObject>,
-    meetsCriteria: boolean
+    progress: number
 }
 
 export type {QuestionSetType}

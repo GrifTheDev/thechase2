@@ -1,1 +1,1 @@
-export const qSetCreation = $state({progress: 1})
+export const qSetCreation = $state({progress: 0})

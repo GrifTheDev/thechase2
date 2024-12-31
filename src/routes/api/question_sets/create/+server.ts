@@ -16,7 +16,7 @@ import { updateUserPermissions } from "$lib/server/auth/permissions";
 // * Even if someone queries the API with some bullshit token, the middleware will
 // * activate and reroute the user to /login.
 export const POST: RequestHandler = async ({ request, cookies }) => {
-  const { title, meetsCriteria, questions_open, questions_three }: QuestionSetType = await request.json();
+  const { title, progress, questions_open, questions_three }: QuestionSetType = await request.json();
 
   let responseObject: ServerResponseType = {
     code: 200,
@@ -37,11 +37,11 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
   }
 
   // * You have the permission to create a question set! YAY!
-  const questionSetID = generateRandomBase64String(24)
-  questionSetID.replaceAll("/", "") // *Just in case the random gen gives us a /.
+  let questionSetID = generateRandomBase64String(24)
+  questionSetID = questionSetID.replaceAll("/", "") // *Just in case the random gen gives us a /.
   await updateQuestionSetsData(questionSetID, {
     title: title,
-    meetsCriteria: meetsCriteria,
+    progress: progress,
     questions_open: questions_open,
     questions_three: questions_three
   })
@@ -61,6 +61,6 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
     sameSite: "strict",
   });
 
-  return Response.json(responseObject);
+  return Response.json(Object.assign(responseObject, {id: questionSetID}));
 
 };
