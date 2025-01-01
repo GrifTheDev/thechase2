@@ -89,9 +89,9 @@
 
     const res: ServerResponseType = await req.json();
     if (res.code == 200 && browser) {
+      localStorageQuestions = [...questionSetCreationObject.questions_three, ...questionsToSave]
       questionSetCreationObject.questions_three = [...questionSetCreationObject.questions_three, ...questionsToSave]
       localStorage.setItem("QSCP", JSON.stringify(questionSetCreationObject));
-      localStorageQuestions = [...questionSetCreationObject.questions_three, ...questionsToSave]
       questionsToSave = []
     }
   }
@@ -328,7 +328,6 @@
     {/each}
   </tbody>
 </table>
-
 <div class="flex flex-row space-x-3 items-center justify-center">
   <BlueButton textSize="md" label="Continue" disabledState={true}></BlueButton>
   <GreenButton
