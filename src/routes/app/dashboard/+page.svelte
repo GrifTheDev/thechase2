@@ -8,7 +8,7 @@
 <div class="w-screen h-screen bg-dashboard-bg">
     <div class="w-auto h-auto p-4 flex flex-col space-y-3 items-start ">
       <Heading1 label="Question sets"/>
-      <p class="text-white">{JSON.stringify(data.serverData)}</p>
+      <p class="text-white">{JSON.stringify(data.serverData.data)}</p>
         
         {#if true}
         <DefaultParagraph label="You do not have any question sets yet. Add some?"/>
