@@ -14,7 +14,7 @@ export const GET: RequestHandler = async ({ request, locals, cookies }) => {
   const authTokenData = jwt.verify(authToken, PRIVATE_JWT_ACCESS_TOKEN_SECRET) as AccessTokenPayloadType
   const questionSetDocIDs = authTokenData.permissions.question_sets?.docs
   const resData: Array<QuestionSetType> = []
-  
+
   /*
     * Note to self (2.1.2025):
     * The page takes extremely long to load when going to /app/dashboard (2+ seconds!),
@@ -31,9 +31,9 @@ export const GET: RequestHandler = async ({ request, locals, cookies }) => {
     if (cacheHit == undefined) {
       const qSetData = await readQuestionSetsData(setId)
       QuestionSetCache.set(setId, qSetData)
-      resData.push(qSetData!)
+      resData.push(Object.assign(qSetData!, {id: setId}))
     } else {
-      resData.push(cacheHit)
+      resData.push(Object.assign(cacheHit, {id: setId}))
     }
   } 
 

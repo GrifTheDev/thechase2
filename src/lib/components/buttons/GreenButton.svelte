@@ -12,7 +12,7 @@
     textSize: string;
     clickAction?: MouseEventHandler<HTMLButtonElement>;
     disabledState?: boolean;
-    title: string;
+    title?: string;
   } = $props();
 </script>
 
