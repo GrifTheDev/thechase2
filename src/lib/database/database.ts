@@ -85,9 +85,36 @@ async function queryWhereUsersData(field: string, value: string, operator: Where
         return querySnapshot
       }        
   }
+}
 
-  
+async function queryWhereQuestionSetsData(field: string, value: string, operator: WhereFilterOp, options: "all" | "first"): Promise<QuerySnapshot<DBUsersType, DocumentData> | undefined> {
+  let querySnapshot
 
+  try {
+    querySnapshot = await queryWhere("question_sets", field, value, operator) as QuerySnapshot<DBUsersType>
+  } catch (err) {
+    if (querySnapshot?.size == 0) {
+      console.log(`[WARN] [QUERY_WHERE_QS] [${field}]:: Could not find the document with the provided info.`)
+      return undefined
+    } else {
+      console.log(`Returned an error while querying: ${err}`)
+    }
+    return undefined
+  }
+
+  if (querySnapshot.size == 0) return undefined
+
+  switch (options) {
+    case "all":
+      return querySnapshot
+    case "first":
+      if (querySnapshot.size > 1) {
+        console.log(`[WARN] [QUERY_WHERE_QS] [${field}]:: You specified the "first" option, however, multiple docs were found.`)
+        return undefined
+      } else {
+        return querySnapshot
+      }        
+  }
 }
 
 async function readQuestionSetsData(docID: string) {
@@ -98,4 +125,4 @@ async function updateQuestionSetsData(docID: string, data: QuestionSetTypeWrite)
   await updateDocData("question_sets", docID, data);
 }
 
-export { readDocData, readUsersData, updateDocData, updateUsersData, readQuestionSetsData, updateQuestionSetsData, queryWhereUsersData };
+export { readDocData, readUsersData, updateDocData, updateUsersData, readQuestionSetsData, updateQuestionSetsData, queryWhereUsersData, queryWhereQuestionSetsData };

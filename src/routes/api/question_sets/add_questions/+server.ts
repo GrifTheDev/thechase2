@@ -2,7 +2,6 @@ import type { RequestHandler } from "./$types";
 import type { ServerResponseType } from "$lib/types/misc/server_response";
 import { readQuestionSetsData, updateQuestionSetsData } from "$lib/database/database";
 import type { QuestionsThreeObject } from "$lib/types/misc/question_three_object";
-import { arrayUnion } from "firebase/firestore";
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
   const {id, questions}: {id: string, questions: Array<QuestionsThreeObject>} = await request.json();
@@ -11,7 +10,9 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
     code: 200,
     message: "Success",
   };
-
+  /*
+    TODO Add types (three and open) and check permissions
+  */
 
   // ! Issue: This is replacing the entire array.
   // * Solution: Although I could make the endpoint accept what is stored in localStorage, it
