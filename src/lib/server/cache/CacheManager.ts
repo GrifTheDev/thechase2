@@ -1,38 +1,18 @@
-/*
- * I wanted to use redis to create a quick in-memory cache.
- * However, I was already a bit sceptical about that idea since I had heard about the
- * license drama. I tried to google for redis, than some example on how to use it
- * then their docs and so on... Once I finally found some docs they wanted me to create
- * an account with their cloud service???
- * After all that, I decided it would be easier to implement my own cache in the form of
- * this here (for now) very lonely object. Whilst it won't be the most optimized solution,
- * implementing the basics of a cache should allow me to have a usable faximily thereof.
- */
+/* 
+  * Before writing this I felt overwhelmed at the idea of creating even this simple
+  * in-memory cache. However, the sources listed below helped me a ton with understanding
+  * what a cache is and how to write this type of cache.
+  * 
+  * Important sources:
+  * 1. It is imporant to undestand the theory behind caches before being able to implement them.
+  * For that I found this wonderful article: https://www.honeybadger.io/blog/nodejs-caching/
+  * 
+  * 2. Whilst I implemented this from scratch, the GitHub repository for "node-cache" helped
+  * a lot with understanding what goes where. To be specific, the "node_cache.coffee"
+  * file: https://github.com/node-cache/node-cache/blob/master/_src/lib/node_cache.coffee.
+*/
 
 import { PRIVATE_DEFAULT_CACHE_VALIDATION_TIME } from "$env/static/private";
-
-/*
- * Parts of cache to consider (thanks to: https://www.honeybadger.io/blog/nodejs-caching/):
- * - Cache Eviction Policy (when the cache fills up which items to remove)
- * - Cache Strategy
- * - Cache expiration (when items expire)
- *
- */
-
-/* class CacheManager {
-    peTTL: number;
-    test: number;
-    
-    constructor({peTTL}: { peTTL: number }) {
-        this.peTTL = peTTL
-        this.test = 0
-    }
-
-    public getTestState() {
-        this.test += 1
-        console.log("[CACHE MANAGER]::", this.test)
-    }
-} */
 
 interface SettingsType {
   peTTL: number; // * per entry time-to-live (in seconds)
@@ -50,20 +30,20 @@ class CacheManager {
   constructor(settings: SettingsType) {
     this.peTTL = settings.peTTL * 1000; // * covert to ms
     this.cacheValidationTime = settings.cacheValidationTime ?? (Number(PRIVATE_DEFAULT_CACHE_VALIDATION_TIME) * 1000)
-    this.maxCacheSize = settings!.maxEntries ?? -1; // * [MDN] returns its right-hand side operand when its left-hand side operand is null or undefined
+    this.maxCacheSize = settings!.maxEntries ?? 0; // * [MDN] returns its right-hand side operand when its left-hand side operand is null or undefined
 
     this.cacheData = {};
 
     setInterval(() => {
       this.checkCacheEntries();
-    }, 2000);
+    }, this.cacheValidationTime).unref();
   }
 
   public set(key: string | number, value: any) {
 
     if (this.cacheExceededMaxSize() != false) {
       console.log("Cache exceeded max size, cannot set new elements")
-      return
+      return undefined
     }
 
     const itemLifetime = Date.now() + (this.peTTL)
@@ -76,9 +56,13 @@ class CacheManager {
     return this.checkCacheEntry(key)
   }
 
+  public getAll() {
+    return this.cacheData
+  }
+
   private cacheExceededMaxSize() {
     const currentCacheKeys = Object.keys(this.cacheData)
-    if (currentCacheKeys.length >= this.maxCacheSize) {
+    if (currentCacheKeys.length >= this.maxCacheSize && this.maxCacheSize > 0) {
       return currentCacheKeys
     } else {
       return false
@@ -87,7 +71,11 @@ class CacheManager {
 
   private checkCacheEntries() {
     const checkCacheSize = this.cacheExceededMaxSize()
+    // ? I don't see the point in going through the entire cache,
+    // ? since we check each item when we get it. Only if we exceed
+    // ? max size should we go through this.
     if (checkCacheSize != false) {
+      console.log("CheckCacheEntries Triggered")
       for (let key in checkCacheSize) {
         this.checkCacheEntry(key)
       }
@@ -98,12 +86,12 @@ class CacheManager {
     const dataPKG = this.cacheData[key]
     if (dataPKG == undefined) return undefined
 
-    console.log(Date.now() , dataPKG.TTL,Date.now() > dataPKG.TTL)
     if (Date.now() > dataPKG.TTL) {
+      console.log("Deleted cache data")
       delete this.cacheData[key]
       return undefined
     } else {
-      return dataPKG
+      return dataPKG.data
     }
   }
 }
