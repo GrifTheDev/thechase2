@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
+  import QuestionSetPreviewBlock from "$lib/components/blocks/QuestionSetPreviewBlock.svelte";
   import BlueButton from "$lib/components/buttons/BlueButton.svelte";
   import DefaultButton from "$lib/components/buttons/DefaultButton.svelte";
   import GreenButton from "$lib/components/buttons/GreenButton.svelte";
@@ -7,12 +8,15 @@
   import Heading2 from "$lib/components/headings/Heading2.svelte";
   import DefaultParagraph from "$lib/components/paragraphs/DefaultParagraph.svelte";
   import type { QuestionSetType } from "$lib/types/database/question_sets";
-  let { data }: { data: { serverData: { data: Array<QuestionSetType & {id: string}>} } } =
-    $props();
+  let {
+    data,
+  }: {
+    data: { serverData: { data: Array<QuestionSetType & { id: string }> } };
+  } = $props();
 
-  async function sendToEdit() {
-    localStorage.setItem("QSCP", JSON.stringify(Object.assign(data.serverData.data[0], {id: data.serverData.data[0].id})))
-    await goto("/app/questions/create")
+  async function createNewQuestionSet() {
+    localStorage.removeItem("QSCP")
+    await goto("/app/questions/create");
   }
 </script>
 
@@ -32,30 +36,19 @@
         }}
       />
     {:else}
-      <p class="hidden border-yellow-500">a</p>
-      <div
-        class="border border-{data.serverData.data[0].progress < 5
-          ? 'yellow-500'
-          : 'white'} rounded-md p-5 text-left"
-      >
-        <Heading2 label={data.serverData.data[0].title} />
-        {#if data.serverData.data[0].progress < 5}
-          <p class="text-yellow-500 pb-1">
-            This question set has not been finished and cannot be used to start
-            a game!
-          </p>
-        {/if}
-        <p class="text-gray-400 italic">
-          Multiple answer questions: {data.serverData.data[0].questions_three
-            .length}
-        </p>
-        <p class="text-gray-400 italic">
-          Open answer questions: {data.serverData.data[0].questions_open.length}
-        </p>
-        <div class="pt-3 flex flex-row space-x-2">
-        <GreenButton label="Play" textSize="sm" disabledState={data.serverData.data[0].progress < 5} />
-        <BlueButton label="Continue Editing" textSize="sm" clickAction={sendToEdit}/>
-        </div>
+      <div class="flex flex-row space-x-4 overflow-x-scroll overflow-y-hidden">
+        {#each data.serverData.data as qSetData}
+          <div class="shrink-0 w-[400px]">
+            <QuestionSetPreviewBlock questionSetData={qSetData} />
+          </div>
+        {/each}
+        <button
+          class="w-60 shrink-0 flex flex-col space-y-2 border border-white rounded-md p-5 text-white text-center justify-center transition-all hover:scale-105 hover:bg-white hover:text-black hover:rounded-md active:scale-95"
+          onclick={createNewQuestionSet}
+          >
+          <p class="text-5xl">+</p>
+          <p>Create Question Set</p>
+        </button>
       </div>
     {/if}
   </div>
