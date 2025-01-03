@@ -5,6 +5,9 @@ export default {
   content: ['./src/**/*.{html,js,svelte,ts}'],
   theme: {
     extend: {
+      backgroundSize: {
+        "50%": "50%"
+      },
       colors: {
         "nav-bg": "#000000",
         "dashboard-bg": "#060A0E",

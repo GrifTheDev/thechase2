@@ -21,7 +21,8 @@
 </script>
 
 <div class="w-screen h-screen bg-dashboard-bg">
-  <div class="w-auto h-auto p-4 flex flex-col space-y-3 items-start">
+  <!--! OVERFLOW MUST BE APPLIED TO PARENT ELEMENT -->
+  <div class="w-auto h-auto p-4 flex flex-col space-y-3 items-start overflow-x-auto">
     <Heading1 label="Question sets" />
 
     {#if data.serverData.data.length == 0}
@@ -36,11 +37,9 @@
         }}
       />
     {:else}
-      <div class="flex flex-row space-x-4 overflow-x-scroll overflow-y-hidden">
+      <div class="flex flex-row space-x-4 overflow-y-hidden">
         {#each data.serverData.data as qSetData}
-          <div class="shrink-0 w-[400px]">
-            <QuestionSetPreviewBlock questionSetData={qSetData} />
-          </div>
+          <QuestionSetPreviewBlock questionSetData={qSetData} />
         {/each}
         <button
           class="w-60 shrink-0 flex flex-col space-y-2 border border-white rounded-md p-5 text-white text-center justify-center transition-all hover:scale-105 hover:bg-white hover:text-black hover:rounded-md active:scale-95"
