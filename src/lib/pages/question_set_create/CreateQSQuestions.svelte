@@ -110,17 +110,16 @@
 />
 
 <div
-  class="w-[25%] h-6 bg-red-400 rounded-sm flex flex-row bg-opacity-50 relative"
+  class="w-[25%] h-8 border-[3px] border-white rounded-sm flex flex-row bg-opacity-50 relative"
 >
   <progress
     value={(questionsToSave.length + localStorageQuestions.length).toString()}
     max="30"
-    class="progress-filled:bg-red-700 bg-transparent w-1/6"
+    class="progress-filled:bg-white bg-transparent w-1/6 "
   >
-    32%
   </progress>
-  <span class="h-8 w-[2px] rounded-md bg-white"
-    ><p class="translate-y-7 text-white">Minimum</p></span
+  <span class="h-10 w-[2px] rounded-md bg-blue-300"
+    ><p class="translate-y-9 text-blue-300">Minimum (30)</p></span
   >
   <progress
     value={(
@@ -129,12 +128,11 @@
       30
     ).toString()}
     max="70"
-    class="progress-filled:bg-green-400 bg-transparent w-1/3"
+    class="progress-filled:bg-white bg-transparent w-1/3"
   >
-    32%
   </progress>
-  <span class="h-8 w-[2px] rounded-md bg-white"
-    ><p class="translate-y-7 text-white">Recommended</p></span
+  <span class="h-10 w-[2px] rounded-md bg-blue-300"
+    ><p class="translate-y-9 text-blue-300">Recommended (100)</p></span
   >
   <progress
     value={(
@@ -143,16 +141,15 @@
       100
     ).toString()}
     max="500"
-    class="progress-filled:bg-slate-500 bg-transparent w-1/2"
+    class="progress-filled:bg-white bg-transparent w-1/2"
   >
-    32%
   </progress>
-  <span class="absolute right-0 h-8 w-[2px] rounded-md bg-white"
-    ><p class="translate-y-7 text-white">Maximum</p></span
+  <span class="absolute right-0 h-10 w-[2px] rounded-md bg-blue-300 translate-x-[2.5px]"
+    ><p class="translate-y-9 text-blue-300">Maximum (500)</p></span
   >
 </div>
 
-<div class="w-100% h-4"></div>
+<div class="w-100% h-10"></div>
 
 <PurpleFillButton textSize="md" label="+ Add Question" clickAction={dialogOpen}
 ></PurpleFillButton>
@@ -272,7 +269,6 @@
         </div>
       </div>
 
-      <p class="text-white">{JSON.stringify(currentInputQuestions)}</p>
 
       <div class="flex flex-grow"></div>
       <div class="flex flex-row space-x-1 m-auto">
@@ -329,7 +325,7 @@
   </tbody>
 </table>
 <div class="flex flex-row space-x-3 items-center justify-center">
-  <BlueButton textSize="md" label="Continue" disabledState={true}></BlueButton>
+  <BlueButton textSize="md" label="Continue" disabledState={localStorageQuestions.length <= 30}></BlueButton>
   <GreenButton
     title={questionsToSave.length > 0 ? "You have changes to save!" : ""}
     textSize="md"
