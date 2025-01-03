@@ -10,7 +10,7 @@
   import GreenButton from "$lib/components/buttons/GreenButton.svelte";
   import type { QuestionSetType } from "$lib/types/database/question_sets";
   import type { ServerResponseType } from "$lib/types/misc/server_response";
-  import { redirect } from "@sveltejs/kit";
+  import { qSetCreation } from "$lib/states/question_set_creation.svelte";
 
   let questionsToSave: Array<QuestionsThreeObject> = $state([]);
   let localStorageQuestions: Array<QuestionsThreeObject> = $state([]);
@@ -94,6 +94,32 @@
       localStorage.setItem("QSCP", JSON.stringify(questionSetCreationObject));
       questionsToSave = []
     }
+  }
+
+  async function advanceProgress() {
+    let questionSetCreationObject: QuestionSetType & { id: string } | null = null;
+    if (browser) {
+      // @ts-ignore
+      // * JSON.parse(null) will return null which is exactly what I need, just can't find a way
+      // * for TS to understand this.
+      questionSetCreationObject = JSON.parse(localStorage.getItem("QSCP"));
+    }
+    if (questionSetCreationObject == null) return console.log("what the fuckk (submitSavedQuestionsToSet)");
+    
+    questionSetCreationObject.progress += 1
+
+    await fetch("/api/question_sets/advance_setup", {
+      method: "POST",
+      body: JSON.stringify({ id: questionSetCreationObject.id, newProgress: questionSetCreationObject.progress }),
+    });
+
+    localStorage.setItem("QSCP", JSON.stringify(questionSetCreationObject))
+    qSetCreation.progress = questionSetCreationObject.progress
+
+
+    // TODO API req to change db
+    // TODO change state thingy
+    // TODO change loclastorage
   }
 </script>
 
@@ -325,7 +351,7 @@
   </tbody>
 </table>
 <div class="flex flex-row space-x-3 items-center justify-center">
-  <BlueButton textSize="md" label="Continue" disabledState={localStorageQuestions.length <= 30}></BlueButton>
+  <BlueButton textSize="md" label="Continue" disabledState={localStorageQuestions.length <= 30} clickAction={advanceProgress}></BlueButton>
   <GreenButton
     title={questionsToSave.length > 0 ? "You have changes to save!" : ""}
     textSize="md"

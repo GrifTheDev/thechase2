@@ -56,6 +56,11 @@ class CacheManager {
     return this.checkCacheEntry(key)
   }
 
+  public delete(key: string | number) {
+    delete this.cacheData[key]
+    return true
+  }
+
   public getAll() {
     return this.cacheData
   }
