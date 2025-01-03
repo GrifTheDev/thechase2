@@ -17,17 +17,18 @@ const example: QuestionSetsType = {
 } */
 // * ------------------------------------------------------------------
 
+import type { QuestionOpenType } from "../misc/question_open_object"
 import type { QuestionsThreeObject } from "../misc/question_three_object"
 
 interface QuestionSetType {
     title: string,
-    questions_open: Array<string>
+    questions_open: Array<QuestionOpenType>
     questions_three: Array<QuestionsThreeObject>,
     progress: number
 }
 interface QuestionSetTypeWrite {
     title?: string,
-    questions_open?: Array<string>
+    questions_open?: Array<QuestionOpenType>
     questions_three?: Array<QuestionsThreeObject>,
     progress?: number
 }

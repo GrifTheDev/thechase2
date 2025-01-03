@@ -84,7 +84,7 @@
     if (questionSetCreationObject == null) return console.log("what the fuckk (submitSavedQuestionsToSet)");
     const req = await fetch("/api/question_sets/add_questions", {
       method: "POST",
-      body: JSON.stringify({ id: questionSetCreationObject.id, questions: questionsToSave }),
+      body: JSON.stringify({ id: questionSetCreationObject.id, questions: questionsToSave, type: "three" }),
     });
 
     const res: ServerResponseType = await req.json();
@@ -116,10 +116,6 @@
     localStorage.setItem("QSCP", JSON.stringify(questionSetCreationObject))
     qSetCreation.progress = questionSetCreationObject.progress
 
-
-    // TODO API req to change db
-    // TODO change state thingy
-    // TODO change loclastorage
   }
 </script>
 
@@ -294,7 +290,13 @@
           </button>
         </div>
       </div>
-
+      <p class="text-white break-words text-center italic">
+        Three answers questions are used for the hunt stage of the game. 
+        While the minimum required amount is 30, we
+        recommend making at least 100 open-ended questions. The system will
+        automatically start repeating questions in the game once 85% of the
+        questions are used.
+      </p>
 
       <div class="flex flex-grow"></div>
       <div class="flex flex-row space-x-1 m-auto">
@@ -327,24 +329,24 @@
   <tbody class="text-md">
     {#each questionsToSave as q, i}
       <tr class="bg-red-400 bg-opacity-75 border-b border-gray-700">
-        <td class="py-2 px-2 break-all">
+        <td class="py-2 px-2 break-all border-r border-gray-700">
           {q.label}
         </td>
-        <td class="py-2 px-2 break-all">{q.answerA}</td>
-        <td class="py-2 px-2 break-all">{q.answerB}</td>
-        <td class="py-2 px-2 break-all">{q.answerC}</td>
+        <td class="py-2 px-2 break-all border-r border-gray-700">{q.answerA}</td>
+        <td class="py-2 px-2 break-all border-r border-gray-700">{q.answerB}</td>
+        <td class="py-2 px-2 break-all border-r border-gray-700">{q.answerC}</td>
         <td class="py-2 px-2 break-all">{q.correctAnswer}</td>
       </tr>
     {/each}
 
     {#each localStorageQuestions as l, i}
       <tr class="bg-gray-800 border-b border-gray-700">
-        <td class="py-2 px-2 break-all">
+        <td class="py-2 px-2 break-all border-r border-gray-700">
           {l.label}
         </td>
-        <td class="py-2 px-2 break-all">{l.answerA}</td>
-        <td class="py-2 px-2 break-all">{l.answerB}</td>
-        <td class="py-2 px-2 break-all">{l.answerC}</td>
+        <td class="py-2 px-2 break-all border-r border-gray-700">{l.answerA}</td>
+        <td class="py-2 px-2 break-all border-r border-gray-700">{l.answerB}</td>
+        <td class="py-2 px-2 break-all border-r border-gray-700">{l.answerC}</td>
         <td class="py-2 px-2 break-all">{l.correctAnswer}</td>
       </tr>
     {/each}
