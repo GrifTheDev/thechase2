@@ -13,6 +13,7 @@
   import { redirect } from "@sveltejs/kit";
   import type { QuestionOpenType } from "$lib/types/misc/question_open_object";
   import BlueFillButton from "$lib/components/buttons/BlueFillButton.svelte";
+  import { qSetCreation } from "$lib/states/question_set_creation.svelte";
 
   let questionsToSave: Array<QuestionOpenType> = $state([]);
   let localStorageQuestions: Array<QuestionOpenType> = $state([]);
@@ -90,6 +91,32 @@
       questionsToSave = [];
     }
   }
+
+  async function advanceProgress() {
+    let questionSetCreationObject: (QuestionSetType & { id: string }) | null =
+      null;
+    if (browser) {
+      // @ts-ignore
+      // * JSON.parse(null) will return null which is exactly what I need, just can't find a way
+      // * for TS to understand this.
+      questionSetCreationObject = JSON.parse(localStorage.getItem("QSCP"));
+    }
+    if (questionSetCreationObject == null)
+      return console.log("what the fuckk (submitSavedQuestionsToSet)");
+
+    questionSetCreationObject.progress += 1;
+
+    await fetch("/api/question_sets/advance_setup", {
+      method: "POST",
+      body: JSON.stringify({
+        id: questionSetCreationObject.id,
+        newProgress: questionSetCreationObject.progress,
+      }),
+    });
+
+    localStorage.setItem("QSCP", JSON.stringify(questionSetCreationObject));
+    qSetCreation.progress = questionSetCreationObject.progress;
+  }
 </script>
 
 <div class="flex flex-row justify-center items-center space-x-1">
@@ -163,6 +190,7 @@
   <BlueButton
     textSize="md"
     label="Continue"
+    clickAction={advanceProgress}
     disabledState={localStorageQuestions.length <= 30}
   ></BlueButton>
 </div>

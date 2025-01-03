@@ -4,6 +4,7 @@
   import CreateQsOpenQuestions from "$lib/pages/question_set_create/CreateQSOpenQuestions.svelte";
   import CreateQsQuestions from "$lib/pages/question_set_create/CreateQSQuestions.svelte";
   import CreateQSTitle from "$lib/pages/question_set_create/CreateQSTitle.svelte";
+  import FinalizeQsCreation from "$lib/pages/question_set_create/FinalizeQSCreation.svelte";
   import { qSetCreation } from "$lib/states/question_set_creation.svelte"
   import type { QuestionSetType } from "$lib/types/database/question_sets";
 
@@ -31,6 +32,8 @@
       <CreateQsQuestions/>
     {:else if qSetCreation.progress == 3}
       <CreateQsOpenQuestions/>
+    {:else if qSetCreation.progress == 4}
+      <FinalizeQsCreation />
     {/if}
     
   </div>
