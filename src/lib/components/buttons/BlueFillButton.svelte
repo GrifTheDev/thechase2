@@ -14,7 +14,7 @@
     } = $props();
   </script>
     <button
-    class="text-white text-center text-{textSize} bg-purple-600 rounded-md py-2 px-6 transition ease-in-out duration-200 disabled:opacity-50 disabled:border-gray-400 enabled:hover:scale-105 enabled:hover:shadow-whiteGlow enabled:hover:-rotate-1 rotate enabled:active:scale-95 enabled:active:rotate-1 enabled:active:shadow-none"
+    class="text-white text-center text-{textSize} bg-blue-800 border-2 border-blue-800 rounded-md py-2 px-6 transition ease-in-out duration-200 disabled:opacity-50 disabled:border-gray-400 enabled:hover:scale-105 enabled:hover:shadow-whiteGlow enabled:hover:-rotate-1 rotate enabled:active:scale-95 enabled:active:rotate-1 enabled:active:shadow-none"
     disabled={disabledState}
     onclick={clickAction}>{label}</button>
 

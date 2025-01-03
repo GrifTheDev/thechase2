@@ -2,7 +2,7 @@
   import Heading1 from "$lib/components/headings/Heading1.svelte";
   import DefaultParagraph from "$lib/components/paragraphs/DefaultParagraph.svelte";
   import BlueButton from "$lib/components/buttons/BlueButton.svelte";
-  import PurpleFillButton from "$lib/components/buttons/PurpleFillButton.svelte";
+  import PurpleFillButton from "$lib/components/buttons/BlueFillButton.svelte";
   import { browser } from "$app/environment";
   import RedButton from "$lib/components/buttons/RedButton.svelte";
   import type { QuestionsThreeObject } from "$lib/types/misc/question_three_object";
@@ -11,6 +11,7 @@
   import type { QuestionSetType } from "$lib/types/database/question_sets";
   import type { ServerResponseType } from "$lib/types/misc/server_response";
   import { qSetCreation } from "$lib/states/question_set_creation.svelte";
+  import BlueFillButton from "$lib/components/buttons/BlueFillButton.svelte";
 
   let questionsToSave: Array<QuestionsThreeObject> = $state([]);
   let localStorageQuestions: Array<QuestionsThreeObject> = $state([]);
@@ -74,48 +75,64 @@
   async function submitSavedQuestionsToSet() {
     // * 1. send fetch request and save the batch to DB
     // * 2. update localstorage
-    let questionSetCreationObject: QuestionSetType & { id: string } | null = null;
+    let questionSetCreationObject: (QuestionSetType & { id: string }) | null =
+      null;
     if (browser) {
       // @ts-ignore
       // * JSON.parse(null) will return null which is exactly what I need, just can't find a way
       // * for TS to understand this.
       questionSetCreationObject = JSON.parse(localStorage.getItem("QSCP"));
     }
-    if (questionSetCreationObject == null) return console.log("what the fuckk (submitSavedQuestionsToSet)");
+    if (questionSetCreationObject == null)
+      return console.log("what the fuckk (submitSavedQuestionsToSet)");
     const req = await fetch("/api/question_sets/add_questions", {
       method: "POST",
-      body: JSON.stringify({ id: questionSetCreationObject.id, questions: questionsToSave, type: "three" }),
+      body: JSON.stringify({
+        id: questionSetCreationObject.id,
+        questions: questionsToSave,
+        type: "three",
+      }),
     });
 
     const res: ServerResponseType = await req.json();
     if (res.code == 200 && browser) {
-      localStorageQuestions = [...questionSetCreationObject.questions_three, ...questionsToSave]
-      questionSetCreationObject.questions_three = [...questionSetCreationObject.questions_three, ...questionsToSave]
+      localStorageQuestions = [
+        ...questionSetCreationObject.questions_three,
+        ...questionsToSave,
+      ];
+      questionSetCreationObject.questions_three = [
+        ...questionSetCreationObject.questions_three,
+        ...questionsToSave,
+      ];
       localStorage.setItem("QSCP", JSON.stringify(questionSetCreationObject));
-      questionsToSave = []
+      questionsToSave = [];
     }
   }
 
   async function advanceProgress() {
-    let questionSetCreationObject: QuestionSetType & { id: string } | null = null;
+    let questionSetCreationObject: (QuestionSetType & { id: string }) | null =
+      null;
     if (browser) {
       // @ts-ignore
       // * JSON.parse(null) will return null which is exactly what I need, just can't find a way
       // * for TS to understand this.
       questionSetCreationObject = JSON.parse(localStorage.getItem("QSCP"));
     }
-    if (questionSetCreationObject == null) return console.log("what the fuckk (submitSavedQuestionsToSet)");
-    
-    questionSetCreationObject.progress += 1
+    if (questionSetCreationObject == null)
+      return console.log("what the fuckk (submitSavedQuestionsToSet)");
+
+    questionSetCreationObject.progress += 1;
 
     await fetch("/api/question_sets/advance_setup", {
       method: "POST",
-      body: JSON.stringify({ id: questionSetCreationObject.id, newProgress: questionSetCreationObject.progress }),
+      body: JSON.stringify({
+        id: questionSetCreationObject.id,
+        newProgress: questionSetCreationObject.progress,
+      }),
     });
 
-    localStorage.setItem("QSCP", JSON.stringify(questionSetCreationObject))
-    qSetCreation.progress = questionSetCreationObject.progress
-
+    localStorage.setItem("QSCP", JSON.stringify(questionSetCreationObject));
+    qSetCreation.progress = questionSetCreationObject.progress;
   }
 </script>
 
@@ -137,7 +154,7 @@
   <progress
     value={(questionsToSave.length + localStorageQuestions.length).toString()}
     max="30"
-    class="progress-filled:bg-white bg-transparent w-1/6 "
+    class="progress-filled:bg-white bg-transparent w-1/6"
   >
   </progress>
   <span class="h-10 w-[2px] rounded-md bg-blue-300"
@@ -166,15 +183,35 @@
     class="progress-filled:bg-white bg-transparent w-1/2"
   >
   </progress>
-  <span class="absolute right-0 h-10 w-[2px] rounded-md bg-blue-300 translate-x-[2.5px]"
+  <span
+    class="absolute right-0 h-10 w-[2px] rounded-md bg-blue-300 translate-x-[2.5px]"
     ><p class="translate-y-9 text-blue-300">Maximum (500)</p></span
   >
 </div>
 
 <div class="w-100% h-10"></div>
+<div class="flex flex-row space-x-3 items-center justify-center">
+  <BlueFillButton
+    textSize="md"
+    label="+ Add Question"
+    clickAction={dialogOpen}
+  ></BlueFillButton>
+  
+  <GreenButton
+    title={questionsToSave.length > 0 ? "You have changes to save!" : ""}
+    textSize="md"
+    clickAction={submitSavedQuestionsToSet}
+    label="Save"
+    disabledState={questionsToSave.length == 0}
+  ></GreenButton>
 
-<PurpleFillButton textSize="md" label="+ Add Question" clickAction={dialogOpen}
-></PurpleFillButton>
+  <BlueButton
+    textSize="md"
+    label="Continue"
+    disabledState={localStorageQuestions.length <= 30}
+    clickAction={advanceProgress}
+  ></BlueButton>
+</div>
 
 <dialog
   class="bg-transparent overflow-hidden w-[100%] h-[100%] open:animate-modalSpawn"
@@ -291,11 +328,10 @@
         </div>
       </div>
       <p class="text-white break-words text-center italic">
-        Three answers questions are used for the hunt stage of the game. 
-        While the minimum required amount is 30, we
-        recommend making at least 100 open-ended questions. The system will
-        automatically start repeating questions in the game once 85% of the
-        questions are used.
+        Three answers questions are used for the hunt stage of the game. While
+        the minimum required amount is 30, we recommend making at least 100
+        open-ended questions. The system will automatically start repeating
+        questions in the game once 85% of the questions are used.
       </p>
 
       <div class="flex flex-grow"></div>
@@ -332,9 +368,12 @@
         <td class="py-2 px-2 break-all border-r border-gray-700">
           {q.label}
         </td>
-        <td class="py-2 px-2 break-all border-r border-gray-700">{q.answerA}</td>
-        <td class="py-2 px-2 break-all border-r border-gray-700">{q.answerB}</td>
-        <td class="py-2 px-2 break-all border-r border-gray-700">{q.answerC}</td>
+        <td class="py-2 px-2 break-all border-r border-gray-700">{q.answerA}</td
+        >
+        <td class="py-2 px-2 break-all border-r border-gray-700">{q.answerB}</td
+        >
+        <td class="py-2 px-2 break-all border-r border-gray-700">{q.answerC}</td
+        >
         <td class="py-2 px-2 break-all">{q.correctAnswer}</td>
       </tr>
     {/each}
@@ -344,22 +383,15 @@
         <td class="py-2 px-2 break-all border-r border-gray-700">
           {l.label}
         </td>
-        <td class="py-2 px-2 break-all border-r border-gray-700">{l.answerA}</td>
-        <td class="py-2 px-2 break-all border-r border-gray-700">{l.answerB}</td>
-        <td class="py-2 px-2 break-all border-r border-gray-700">{l.answerC}</td>
+        <td class="py-2 px-2 break-all border-r border-gray-700">{l.answerA}</td
+        >
+        <td class="py-2 px-2 break-all border-r border-gray-700">{l.answerB}</td
+        >
+        <td class="py-2 px-2 break-all border-r border-gray-700">{l.answerC}</td
+        >
         <td class="py-2 px-2 break-all">{l.correctAnswer}</td>
       </tr>
     {/each}
   </tbody>
 </table>
-<div class="flex flex-row space-x-3 items-center justify-center">
-  <BlueButton textSize="md" label="Continue" disabledState={localStorageQuestions.length <= 30} clickAction={advanceProgress}></BlueButton>
-  <GreenButton
-    title={questionsToSave.length > 0 ? "You have changes to save!" : ""}
-    textSize="md"
-    clickAction={submitSavedQuestionsToSet}
-    label="Save"
-    disabledState={questionsToSave.length == 0}
-  ></GreenButton>
-</div>
 <p class="hidden text-black">p</p>

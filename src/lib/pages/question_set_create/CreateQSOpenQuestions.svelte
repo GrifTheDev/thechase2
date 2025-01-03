@@ -2,7 +2,7 @@
   import Heading1 from "$lib/components/headings/Heading1.svelte";
   import DefaultParagraph from "$lib/components/paragraphs/DefaultParagraph.svelte";
   import BlueButton from "$lib/components/buttons/BlueButton.svelte";
-  import PurpleFillButton from "$lib/components/buttons/PurpleFillButton.svelte";
+  import PurpleFillButton from "$lib/components/buttons/BlueFillButton.svelte";
   import { browser } from "$app/environment";
   import RedButton from "$lib/components/buttons/RedButton.svelte";
   import type { QuestionsThreeObject } from "$lib/types/misc/question_three_object";
@@ -12,6 +12,7 @@
   import type { ServerResponseType } from "$lib/types/misc/server_response";
   import { redirect } from "@sveltejs/kit";
   import type { QuestionOpenType } from "$lib/types/misc/question_open_object";
+  import BlueFillButton from "$lib/components/buttons/BlueFillButton.svelte";
 
   let questionsToSave: Array<QuestionOpenType> = $state([]);
   let localStorageQuestions: Array<QuestionOpenType> = $state([]);
@@ -47,34 +48,46 @@
   function submitNewQuestionToSet() {
     questionsToSave.push({
       label: currentOpenEndedQuestionObject.label,
-      answer: currentOpenEndedQuestionObject.answer
-    })
+      answer: currentOpenEndedQuestionObject.answer,
+    });
     // @ts-ignore
     for (var member in currentOpenEndedQuestionObject) currentOpenEndedQuestionObject[member] = "";
-  
-    dialogClose()
+
+    dialogClose();
   }
 
   async function submitSavedQuestionsToSet() {
-    let questionSetCreationObject: QuestionSetType & { id: string } | null = null;
+    let questionSetCreationObject: (QuestionSetType & { id: string }) | null =
+      null;
     if (browser) {
       // @ts-ignore
       // * JSON.parse(null) will return null which is exactly what I need, just can't find a way
       // * for TS to understand this.
       questionSetCreationObject = JSON.parse(localStorage.getItem("QSCP"));
     }
-    if (questionSetCreationObject == null) return console.log("what the fuckk (submitSavedQuestionsToSet)");
+    if (questionSetCreationObject == null)
+      return console.log("what the fuckk (submitSavedQuestionsToSet)");
     const req = await fetch("/api/question_sets/add_questions", {
       method: "POST",
-      body: JSON.stringify({ id: questionSetCreationObject.id, questions: questionsToSave, type: "open" }),
+      body: JSON.stringify({
+        id: questionSetCreationObject.id,
+        questions: questionsToSave,
+        type: "open",
+      }),
     });
 
     const res: ServerResponseType = await req.json();
     if (res.code == 200 && browser) {
-      localStorageQuestions = [...questionSetCreationObject.questions_open, ...questionsToSave]
-      questionSetCreationObject.questions_open = [...questionSetCreationObject.questions_open, ...questionsToSave]
+      localStorageQuestions = [
+        ...questionSetCreationObject.questions_open,
+        ...questionsToSave,
+      ];
+      questionSetCreationObject.questions_open = [
+        ...questionSetCreationObject.questions_open,
+        ...questionsToSave,
+      ];
       localStorage.setItem("QSCP", JSON.stringify(questionSetCreationObject));
-      questionsToSave = []
+      questionsToSave = [];
     }
   }
 </script>
@@ -134,9 +147,25 @@
 
 <div class="w-100% h-10"></div>
 
-<PurpleFillButton textSize="md" label="+ Add Question" clickAction={dialogOpen}
-></PurpleFillButton>
-
+<div class="flex flex-row space-x-3 items-center justify-center">
+  <BlueFillButton
+    textSize="md"
+    label="+ Add Question"
+    clickAction={dialogOpen}
+  ></BlueFillButton>
+  <GreenButton
+    title={questionsToSave.length > 0 ? "You have changes to save!" : ""}
+    textSize="md"
+    label="Save"
+    clickAction={submitSavedQuestionsToSet}
+    disabledState={questionsToSave.length == 0}
+  ></GreenButton>
+  <BlueButton
+    textSize="md"
+    label="Continue"
+    disabledState={localStorageQuestions.length <= 30}
+  ></BlueButton>
+</div>
 <dialog
   class="bg-transparent overflow-hidden w-[100%] h-[100%] open:animate-modalSpawn"
 >
@@ -215,19 +244,4 @@
     {/each}
   </tbody>
 </table>
-
-<div class="flex flex-row space-x-3 items-center justify-center">
-  <BlueButton
-    textSize="md"
-    label="Continue"
-    disabledState={localStorageQuestions.length <= 30}
-  ></BlueButton>
-  <GreenButton
-    title={questionsToSave.length > 0 ? "You have changes to save!" : ""}
-    textSize="md"
-    label="Save"
-    clickAction={submitSavedQuestionsToSet}
-    disabledState={questionsToSave.length == 0}
-  ></GreenButton>
-</div>
 <p class="hidden text-black">p</p>
