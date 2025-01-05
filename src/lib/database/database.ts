@@ -2,6 +2,7 @@ import { getDB } from "./initialize_firebase";
 import { doc, getDoc, collection, setDoc, query, where, type WhereFilterOp, getDocs, type DocumentData, QuerySnapshot, QueryDocumentSnapshot } from "@firebase/firestore";
 import type { DBUsersType, DBUsersTypeWrite } from "$lib/types/database/users";
 import type { QuestionSetType, QuestionSetTypeWrite } from "$lib/types/database/question_sets";
+import { logger } from "$lib/server/logger/logger";
 
 const { db } = getDB();
 
@@ -64,10 +65,10 @@ async function queryWhereUsersData(field: string, value: string, operator: Where
     querySnapshot = await queryWhere("users", field, value, operator) as QuerySnapshot<DBUsersType>
   } catch (err) {
     if (querySnapshot?.size == 0) {
-      console.log(`[WARN] [QUERY_WHERE_USERD] [${field}]:: Could not find the document with the provided info.`)
+      logger.log({level: "warn", service: "DB", metadata: "queryWhereUsersData", message: `Could query document where ${field} ${operator} ${value}.`})
       return undefined
     } else {
-      console.log(`Returned an error while querying: ${err}`)
+      logger.log({level: "error", service: "DB", metadata: "queryWhereUsersData", message: `Returned an unknown error while querying: ${err}`})
     }
     return undefined
   }
@@ -79,7 +80,7 @@ async function queryWhereUsersData(field: string, value: string, operator: Where
       return querySnapshot
     case "first":
       if (querySnapshot.size > 1) {
-        console.log(`[WARN] [QUERY_WHERE_USERD] [${field}]:: You specified the "first" option, however, multiple docs were found.`)
+        logger.log({level: "warn", service: "DB", metadata: "queryWhereUsersData", message: `You specified the "first" option, however, multiple docs were found. Query: ${field} ${operator} ${value}.`})
         return undefined
       } else {
         return querySnapshot
@@ -94,10 +95,10 @@ async function queryWhereQuestionSetsData(field: string, value: string, operator
     querySnapshot = await queryWhere("question_sets", field, value, operator) as QuerySnapshot<DBUsersType>
   } catch (err) {
     if (querySnapshot?.size == 0) {
-      console.log(`[WARN] [QUERY_WHERE_QS] [${field}]:: Could not find the document with the provided info.`)
+      logger.log({level: "warn", service: "DB", metadata: "queryWhereQuestionSetsData", message: `Could query document where ${field} ${operator} ${value}.`})
       return undefined
     } else {
-      console.log(`Returned an error while querying: ${err}`)
+      logger.log({level: "error", service: "DB", metadata: "queryWhereUsersData", message: `Returned an unknown error while querying: ${err}`})
     }
     return undefined
   }
@@ -109,7 +110,7 @@ async function queryWhereQuestionSetsData(field: string, value: string, operator
       return querySnapshot
     case "first":
       if (querySnapshot.size > 1) {
-        console.log(`[WARN] [QUERY_WHERE_QS] [${field}]:: You specified the "first" option, however, multiple docs were found.`)
+        logger.log({level: "warn", service: "DB", metadata: "queryWhereUsersData", message: `You specified the "first" option, however, multiple docs were found. Query: ${field} ${operator} ${value}.`})
         return undefined
       } else {
         return querySnapshot

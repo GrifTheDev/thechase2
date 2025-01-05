@@ -6,6 +6,7 @@ import {
   invalidateUserAuthTokenPair,
   requestNewTokenPair,
 } from "$lib/server/auth/auth";
+import { logger } from "$lib/server/logger/logger";
 import { redirect, type Handle, error } from "@sveltejs/kit";
 import jwt from "jsonwebtoken";
 
@@ -30,7 +31,6 @@ export const handle = (async ({ event, resolve }) => {
     try {
       jwt.verify(accessToken, PRIVATE_JWT_ACCESS_TOKEN_SECRET);
     } catch (error: any) {
-      console.log("hit", error.toString().startsWith("TokenExpiredError"))
       // * Token has expired. Let's grab a new one!
       if (error.toString().startsWith("TokenExpiredError")) {
         const requestPair = await requestNewTokenPair(
@@ -62,7 +62,6 @@ export const handle = (async ({ event, resolve }) => {
       }
     }
 
-    //console.log(accessToken, refreshToken);
   }
 
   return await resolve(event);

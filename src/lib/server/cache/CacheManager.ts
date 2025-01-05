@@ -13,6 +13,7 @@
 */
 
 import { PRIVATE_DEFAULT_CACHE_VALIDATION_TIME } from "$env/static/private";
+import { logger } from "../logger/logger";
 
 interface SettingsType {
   peTTL: number; // * per entry time-to-live (in seconds)
@@ -42,13 +43,17 @@ class CacheManager {
   public set(key: string | number, value: any) {
 
     if (this.cacheExceededMaxSize() != false) {
-      console.log("Cache exceeded max size, cannot set new elements")
+      logger.log({
+        level: "error",
+        service: "CACHE",
+        metadata: "cacheSize",
+        message: `Cache exceeded max size, cannot set new elements`,
+      });
       return undefined
     }
 
     const itemLifetime = Date.now() + (this.peTTL)
     this.cacheData[key] = {data: value, TTL: itemLifetime}
-    //console.log(`[CACHE DBG] :: Added item ${value} with a lifetime of ${itemLifetime}.`)
     return
   }
 
@@ -80,7 +85,6 @@ class CacheManager {
     // ? since we check each item when we get it. Only if we exceed
     // ? max size should we go through this.
     if (checkCacheSize != false) {
-      console.log("CheckCacheEntries Triggered")
       for (let key in checkCacheSize) {
         this.checkCacheEntry(key)
       }
@@ -92,7 +96,6 @@ class CacheManager {
     if (dataPKG == undefined) return undefined
 
     if (Date.now() > dataPKG.TTL) {
-      console.log("Deleted cache data")
       delete this.cacheData[key]
       return undefined
     } else {

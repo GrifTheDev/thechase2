@@ -1,4 +1,7 @@
-import { PRIVATE_JWT_ACCESS_TOKEN_SECRET, PRIVATE_JWT_REFRESH_TOKEN_SECRET } from "$env/static/private";
+import {
+  PRIVATE_JWT_ACCESS_TOKEN_SECRET,
+  PRIVATE_JWT_REFRESH_TOKEN_SECRET,
+} from "$env/static/private";
 import type { DBUsersType } from "$lib/types/database/users";
 import jwt from "jsonwebtoken";
 import type { AccessTokenPayloadType } from "$lib/types/tokens/access_token";
@@ -7,6 +10,7 @@ import { queryWhereUsersData, updateUsersData } from "$lib/database/database";
 import { createAccessToken, createRefreshToken } from "./utilities";
 import type { AuthTokenPairType } from "$lib/types/tokens/auth_token_pair";
 import { error } from "@sveltejs/kit";
+import { logger } from "../logger/logger";
 
 /**
  * @description Function responsible for validating ONLY STORED access and refresh tokens. Called only on LOGIN.
@@ -37,19 +41,25 @@ async function validateStoredUserTokens(
       error.toString().startsWith("JsonWebTokenError") ||
       error.toString().startsWith("TokenExpiredError")
     ) {
+      logger.log({
+        level: "info",
+        service: "AUTH",
+        metadata: "validateStoredUserTokens",
+        message: `Detected JWT error on stored access_token for document keyed ${dbData.email}. Creating new token pair.`,
+      });
       accessToken = await createAccessToken(dbData);
-      console.log(
-        `[INFO] [user_auth 1] [${
-          error.toString().split(":")[0]
-        }]:: Detected JWT error on stored access_token. Created new token pair:\n (access_token, refresh_token) = (${accessToken}, ${refreshToken})`
-      );
       await updateUsersData(emailHash, {
         access_token: accessToken,
         refresh_tokens: [...dbData.refresh_tokens, refreshToken],
       });
       return { accessToken: accessToken, refreshToken: refreshToken };
     } else {
-      console.log(error);
+      logger.log({
+        level: "error",
+        service: "AUTH",
+        metadata: "validateStoredUserTokens",
+        message: `An unexpected error occured while trying to validate token: ${error}`,
+      });
     }
   }
 }
@@ -60,19 +70,19 @@ async function validateStoredUserTokens(
 async function invalidateUserAuthTokenPair(
   refreshToken: string,
   options: "rt_specific" | "rt_all",
-  dbData?: DBUsersType & {id: string | undefined}
+  dbData?: DBUsersType & { id: string | undefined }
 ): Promise<200 | 404 | 500> {
   /* let docData: DBUsersType = queryDocs.docs[0].data();
   let docID = queryDocs.docs[0].id; */
 
-  let docData: DBUsersType
-  let docID: string
+  let docData: DBUsersType;
+  let docID: string;
 
   if (dbData != undefined) {
-    if (dbData.id == undefined) return 500
-    docID = dbData.id
-    delete dbData.id
-    docData = dbData
+    if (dbData.id == undefined) return 500;
+    docID = dbData.id;
+    delete dbData.id;
+    docData = dbData;
   } else {
     let queryDocs = await queryWhereUsersData(
       "refresh_tokens",
@@ -80,7 +90,7 @@ async function invalidateUserAuthTokenPair(
       "array-contains",
       "first"
     );
-  
+
     if (queryDocs == undefined) {
       let checkConsumedTokens = await queryWhereUsersData(
         "consumed_refresh_tokens",
@@ -88,7 +98,7 @@ async function invalidateUserAuthTokenPair(
         "array-contains",
         "first"
       );
-  
+
       if (checkConsumedTokens == undefined) {
         return 404;
       } else {
@@ -96,12 +106,9 @@ async function invalidateUserAuthTokenPair(
       }
     }
 
-    docData = queryDocs.docs[0].data()
-    docID = queryDocs.docs[0].id
-
+    docData = queryDocs.docs[0].data();
+    docID = queryDocs.docs[0].id;
   }
-
-  
 
   let refreshTokenArray: Array<string> = docData.refresh_tokens;
   let consumedRefreshTokens: Array<string> = docData.consumed_refresh_tokens;
@@ -110,11 +117,12 @@ async function invalidateUserAuthTokenPair(
     case "rt_specific":
       const oldTokenIndex = refreshTokenArray.indexOf(refreshToken);
       if (oldTokenIndex == -1) {
-        console.log(
-          `[WARN] [AUTH_TOKEN_PAIR_INVALIDATION] :: The flag "rt_specific" was passed to the function, however, the search for the provided refresh_token returned -1.\n\nDB DATA: ${JSON.stringify(
-            docData
-          )}`
-        );
+        logger.log({
+          level: "info",
+          service: "AUTH",
+          metadata: "invalidateUserAuthTokenPair",
+          message: `The flag "rt_specific" was passed to the function, however, the search for the provided refresh_token returned -1.`,
+        });
         return 500;
       } else {
         let consumedToken: Array<string> = refreshTokenArray.splice(
@@ -145,26 +153,30 @@ async function invalidateUserAuthTokenPair(
 async function requestNewTokenPair(
   refreshToken: string
 ): Promise<AuthTokenPairType | 401 | 404 | 500> {
-  
   try {
     jwt.verify(refreshToken, PRIVATE_JWT_REFRESH_TOKEN_SECRET);
   } catch (err: any) {
-    console.log(err);
-    let invalidationOption: "rt_specific" | "rt_all" = err.toString().startsWith("TokenExpiredError") ? "rt_specific" : "rt_all" 
+    let invalidationOption: "rt_specific" | "rt_all" = err
+      .toString()
+      .startsWith("TokenExpiredError")
+      ? "rt_specific"
+      : "rt_all";
 
-    const invalidationResult = await invalidateUserAuthTokenPair(refreshToken, invalidationOption);
+    const invalidationResult = await invalidateUserAuthTokenPair(
+      refreshToken,
+      invalidationOption
+    );
     if (invalidationResult == 404) {
-      return 404
+      return 404;
     } else if (invalidationResult == 500) {
-      throw error(500, {message: "Whoops!", devDump: err})
-    } 
-    else {
-      return 401
+      throw error(500, { message: "Whoops!", devDump: err });
+    } else {
+      return 401;
     }
   }
 
   // * Refresh token is valid.
-  
+
   let queryDocs = await queryWhereUsersData(
     "refresh_tokens",
     refreshToken,
@@ -184,39 +196,45 @@ async function requestNewTokenPair(
     // * This, however, relies on the fact that no access token can be present in both "refresh_tokens" & "consumed_refresh_tokens"
     // * at the same time.
     if (checkConsumedTokens != undefined) {
-      console.log(
-        `[WARN] [AUTH] :: An attempt is being made to use a consumed refresh token to aquire a new access token. Dump:\n ${checkConsumedTokens.docs[0].data()}`
+      logger.log({
+        level: "info",
+        service: "AUTH",
+        metadata: "requestNewTokenPair",
+        message: `An attempt has been made to use a consumed refresh token to aquire a new access token (resetting all tokens). Consumed refresh token: ${refreshToken}`,
+      });
+      await invalidateUserAuthTokenPair(
+        refreshToken,
+        "rt_all",
+        Object.assign(checkConsumedTokens.docs[0].data(), {
+          id: checkConsumedTokens.docs[0].id,
+        })
       );
-      await invalidateUserAuthTokenPair(refreshToken, "rt_all", Object.assign(checkConsumedTokens.docs[0].data(), {id: checkConsumedTokens.docs[0].id}));
-      return 401
+      return 401;
     } else {
-      return 404
-    } 
+      return 404;
+    }
   }
   // * We found a valid document, the refresh token has not been consumed, the access token is valid. Best case, and most likely, scenario :)
   else {
     await invalidateUserAuthTokenPair(refreshToken, "rt_specific");
     const docData = queryDocs.docs[0].data();
-    const docID = queryDocs.docs[0].id
+    const docID = queryDocs.docs[0].id;
     const refreshTokens = docData.refresh_tokens;
-    const newRefreshToken = await createRefreshToken()
-    const newAccessToken = await createAccessToken(docData)
+    const newRefreshToken = await createRefreshToken();
+    const newAccessToken = await createAccessToken(docData);
 
     // * We need to remove the refreshToken since the query was from an older version that has not been invalidated.
-    if (refreshTokens.indexOf(refreshToken) == -1) throw error(500, {message: "this should never fukin happen."})
-    refreshTokens.splice(
-      refreshTokens.indexOf(refreshToken),
-      1
-    );
-    refreshTokens.push(newRefreshToken)
+    if (refreshTokens.indexOf(refreshToken) == -1)
+      throw error(500, { message: "this should never fukin happen." });
+    refreshTokens.splice(refreshTokens.indexOf(refreshToken), 1);
+    refreshTokens.push(newRefreshToken);
 
     await updateUsersData(docID, {
       access_token: newAccessToken,
-      refresh_tokens: refreshTokens
-    })
-    
-    return {accessToken: newAccessToken, refreshToken: newRefreshToken}
+      refresh_tokens: refreshTokens,
+    });
 
+    return { accessToken: newAccessToken, refreshToken: newRefreshToken };
   }
 }
 

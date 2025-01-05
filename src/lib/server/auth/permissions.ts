@@ -26,7 +26,6 @@ async function updateUserPermissions(
     let newPermissionsObject: UserPermissionsType = accessTokenData.permissions
     newPermissionsObject[collection]!.access = access
     newPermissionsObject[collection]!.docs.push(docID)
-    console.log(newPermissionsObject)
 
   const userDoc = await queryWhereUsersData(
     "access_token",
