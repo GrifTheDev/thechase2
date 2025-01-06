@@ -9,7 +9,7 @@
 <nav class="w-auto p-4 bg-nav-bg flex flex-row items-center justify-between border-b border-white">
     <div class="w-auto flex flex-row space-x-1">
         <Heading0 label="The Hunt"/>
-        <p class="text-white">v{PUBLIC_VERSION}</p>
+        <p class="text-white">v{PUBLIC_VERSION} (DEV)</p>
     </div>
     <div class="w-auto p-4 flex flex-row justify-between space-x-4">
         <a class="text-xl text-{data.selected[0] == 1 ? "blue-400" : "white"}" href="/app/dashboard">Dashboard</a>
