@@ -1,8 +1,6 @@
 <script lang="ts">
   import type { QuestionSetType } from "$lib/types/database/question_sets";
-  import type { MouseEventHandler } from "svelte/elements";
   import Heading2 from "../headings/Heading2.svelte";
-  import GreenButton from "../buttons/GreenButton.svelte";
   import BlueButton from "../buttons/BlueButton.svelte";
   import { goto } from "$app/navigation";
   import DefaultButton from "../buttons/DefaultButton.svelte";
@@ -23,6 +21,14 @@
   async function sendToEdit() {
     localStorage.setItem("QSCP", JSON.stringify(questionSetData));
     await goto("/app/questions/create");
+  }
+
+  async function startGame() {
+    localStorage.setItem("QSCP", JSON.stringify(questionSetData));
+    // * Players will connect to domain.com/player
+    // * Host will have two pages domain.com/app/game/admin
+    // *                          domain.com/app/game/display
+    await goto("/app/game/admin");
   }
 </script>
 
@@ -71,9 +77,10 @@
   <div class="flex flex-grow"></div>
   <div class="pt-2 flex flex-row space-x-2">
     <DefaultButton
-      label="Play"
+      label="Start Game"
       textSize="sm"
       disabledState={questionSetData.progress < 5}
+      clickAction={startGame}
     />
     {#if questionSetData.progress < 5}
       <DefaultButton

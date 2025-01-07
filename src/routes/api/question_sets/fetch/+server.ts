@@ -16,15 +16,6 @@ export const GET: RequestHandler = async ({ request, locals, cookies, url }) => 
   const questionSetDocIDs = authTokenData.permissions.question_sets?.docs
   const resData: Array<QuestionSetType> = []
 
-  /*
-    * Note to self (2.1.2025):
-    * The page takes extremely long to load when going to /app/dashboard (2+ seconds!),
-    * and after thinking the problem might be the cache I ran a benchmark.
-    * The cache takes around 5ms to complete its query, and 90ms when the item is not cached.
-    * The firefox profiler says that most of that 2+ second time is due to "After DNS request".
-    * Furthermore I tried to go to youtube and it is also taking a while to load.
-    * Conclusion, the cache I spent two hours building did not fuck up the entire app.
-  */
   for (let i = 0; i < questionSetDocIDs!.length; i++) { 
     const setId = questionSetDocIDs![i]
     const cacheHit = QuestionSetCache.get(setId)
