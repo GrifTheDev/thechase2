@@ -1,5 +1,5 @@
-import type { HunterObjectType } from "../misc/hunter_object";
-import type { PlayerTeamObjectType } from "../misc/player_team_object";
+import type { HunterObjectType } from "../game/hunter_object";
+import type { PlayerTeamObjectType } from "../game/player_team_object";
 
 interface DBGameType {
     game: {
