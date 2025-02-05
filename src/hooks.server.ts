@@ -18,7 +18,7 @@ export const handle = (async ({ event, resolve }) => {
   // ? Change this so that protected routes can be read from an array
   // !! CHANGE TO /APP ONCE DONE
 
-  if (sanitizedRoute.startsWith("/api/user/login") || sanitizedRoute.startsWith("/api/user/register")) return await resolve(event);
+  if (sanitizedRoute.startsWith("/api/user/login") || sanitizedRoute.startsWith("/api/user/register") || sanitizedRoute.startsWith("/app/game/player") || sanitizedRoute.startsWith("/api/game/public")) return await resolve(event);
 
   if (sanitizedRoute.startsWith("/app") || sanitizedRoute.startsWith("/api")) {
     const accessToken = event.cookies.get("AccessToken");

@@ -6,9 +6,10 @@
   let { data, children }: { data: LayoutData, children: Snippet } = $props();
   </script>
 
+{#if !data.endpoint?.startsWith("/app/game/player")}
 <nav class="w-auto p-4 bg-nav-bg flex flex-row items-center justify-between border-b border-white">
     <div class="w-auto flex flex-row space-x-1">
-        <Heading0 label="The Hunt"/>
+        <Heading0 label="out:run"/>
         <p class="text-white">v{PUBLIC_VERSION} (DEV)</p>
     </div>
     <div class="w-auto p-4 flex flex-row justify-between space-x-4">
@@ -25,4 +26,6 @@
 <!--* Since I am dynamically deciding the classes for each navbar item tailwind does not generate them.-->
 <!--* This is why the hidden paragraph with the desired class exists.-->
 <p class="hidden text-blue-400">a</p>
+{/if}
+
 {@render children?.()}

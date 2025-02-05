@@ -29,6 +29,10 @@
       localStorage.getItem("GProps") 
     ) || undefined;
 
+    if (questionSetObjectL == undefined) {
+      goto("/app/game/player")
+    }
+
     if (gameInfo != undefined) {
       let key = GameState[gameInfo.state]
       gameState.state = GameState[key as keyof typeof GameState]    

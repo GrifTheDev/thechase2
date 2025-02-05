@@ -18,7 +18,7 @@ import type {
   QuestionSetTypeWrite,
 } from "$lib/types/database/question_sets";
 import { logger } from "$lib/server/logger/logger";
-import type { DBGameType } from "$lib/types/database/games";
+import type { DBGameType, DBGameTypeWrite } from "$lib/types/database/games";
 
 const { db } = getDB();
 
@@ -206,7 +206,7 @@ async function readGamesData(docID: string) {
   return (await readDocData("games", docID)) as DBGameType | undefined;
 }
 
-async function updateGamesData(docID: string, data: DBGameType) {
+async function updateGamesData(docID: string, data: DBGameTypeWrite) {
   await updateDocData("games", docID, data);
 }
 
