@@ -20,10 +20,10 @@ const devLogFormat = printf(({ level, message }) => {
 });
 // TODO: switch logger transports when going into prod
 const logger = winston.createLogger({
-    level: "info",
+    level: "debug",
     format: combine(format.colorize(), devLogFormat),
     transports: [
-        new winston.transports.Console({level: "info"})
+        new winston.transports.Console({level: "debug"})
     ]
 })
 

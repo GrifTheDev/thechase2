@@ -1,5 +1,6 @@
 <script lang="ts">
   import DefaultButton from "$lib/components/buttons/DefaultButton.svelte";
+  import { WebSocketMessage } from "$lib/types/misc/websocket_msg_types";
 
   let ws: WebSocket
   function connectToWS() {
@@ -25,7 +26,7 @@
   function sendMsg() {
     if (ws && ws.readyState === WebSocket.OPEN) {
       /* ws.send(JSON.stringify({type: "hello", message: "new"})) */
-    ws.send("hello")
+    ws.send(JSON.stringify({clientID: "bFCE7R5CDNeJe1xuq7e2IAU52geN3sGf", type: WebSocketMessage.CREDENTIALS}))
     
     }
   }

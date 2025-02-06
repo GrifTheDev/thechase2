@@ -1,9 +1,8 @@
 import { MessageTypes } from "./MessageTypes"
 
-interface MessagePayloadType {
+interface MessageResponseType {
     type: MessageTypes,
-    clientID: string,
     data: any
 }
 
-export type { MessagePayloadType }
+export type { MessageResponseType }
