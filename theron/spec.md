@@ -1,0 +1,2 @@
+# Connecting
+Upon connecting to the Theron Websocket Service you will recieve a message of type `CREDENTIALS_REQUEST`. The client must provide a `game_code` upon which Theron will return a `client_id` the client *MUST* provide in all requests to Theron. If the client is the game admin, an `authorization_token` alongside the `game-code` must be provided before a `client_id` is assigned.

@@ -1,0 +1,22 @@
+{
+  "name": "websocket-testing",
+  "version": "0.0.1",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsc ; node './build/index.js'"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@types/node": "^22.13.1",
+    "@types/ws": "^8.5.14",
+    "dotenv": "^16.4.7",
+    "winston": "^3.17.0",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}

@@ -1,25 +1,33 @@
-node_modules
+website/node_modules
+theron/node_modules
 
 # Output
-.output
-.vercel
-/.svelte-kit
-/build
+website/.output
+website/.vercel
+website/.svelte-kit
+website/build
+
+theron/build
 
 # OS
-.DS_Store
-Thumbs.db
+website/.DS_Store
+website/Thumbs.db
 
 # Env
-.env
-.env.*
-!.env.example
-!.env.test
+website/.env
+website/.env.*
+website/!.env.example
+website/!.env.test
+
+theron/.env
+theron/.env.*
+theron/!.env.example
+theron/!.env.test
 
 # Vite
-vite.config.js.timestamp-*
-vite.config.ts.timestamp-*
+website/vite.config.js.timestamp-*
+website/vite.config.ts.timestamp-*
 
 # SHH
-src/lib/database/spec.md
-src/lib/server/auth/spec.md
+website/src/lib/database/spec.md
+website/src/lib/server/auth/spec.md
