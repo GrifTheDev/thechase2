@@ -16,6 +16,7 @@ async function initialConnectionResponse(ws: WebSocket) {
   };
 
   ws.send(JSON.stringify(initialPayloadResponse));
+
   ClientsCache.set(clientID, {socket: ws, gameID: "", clientID: clientID, accessLevel: AccessLevels.NONE});
 
   return;

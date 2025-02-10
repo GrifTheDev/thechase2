@@ -28,7 +28,7 @@
       /* ws.send(JSON.stringify({type: "hello", message: "new"})) */
       // bFCE7R5CDNeJe1xuq7e2IAU52geN3sGf
       // ws.send(JSON.stringify({clientID: "bFCE7R5CDNeJe1xuq7e2IAU52geN3sGf", type: WebSocketMessage.CREDENTIALS, data: {gameCode: "776281", auth_token: "sometoken"}}))
-      ws.send(JSON.stringify({clientID: "bFCE7R5CDNeJe1xuq7e2IAU52geN3sGf", type: WebSocketMessage.CREDENTIALS, data: {gameID: "398240"}}))
+      ws.send(JSON.stringify({clientID: "bFCE7R5CDNeJe1xuq7e2IAU52geN3sGf", type: WebSocketMessage.CREDENTIALS, data: {gameID: "398240", authToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiVGVvIiwicGVybWlzc2lvbnMiOnsicXVlc3Rpb25fc2V0cyI6eyJkb2NzIjpbInNoNnlzQ3U5ODNjc2Z1bUhreTBzWEJIUTc5S0YwQnBUIiwiaFhuVktGaFJrUk9SVVgzVXpOUHoyQzhYYStsblJPdSIsIklXeUhvMENHRlF0Rkt5TUVkdFVGZmh3R2EyZXFDdyIsIm1FbGRudFRIQlRnWHdHVkVnTGU1d2l3VElteWRQQVUiXSwiYWNjZXNzIjoicmVhZHdyaXRlIn19LCJzYWx0IjoiMmxUeThyVVZTK1pYYjYrZ20vMjNFZz09IiwiaWF0IjoxNzM4ODU4NDA3LCJleHAiOjE3Mzg4NTg3MDd9.x8-ZFuaSZH3fL3Xft20INtpirusPvgsoYXtw-upegrg"}}))
     
     }
   }

@@ -70,8 +70,6 @@ wss.on("connection", function connection(ws) {
       manageAccessLevel(clientRecord, receivedPayload);
     }
 
-    // * If an unauthenticated user is attempting to access, we must see if they wish to be authorized.
-
     switch (receivedPayload.type) {
       case MessageTypes.ERR_MALFORMED_REQUEST: {
         break;

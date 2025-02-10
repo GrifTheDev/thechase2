@@ -8,7 +8,8 @@ interface DBUsersType {
     access_token: string, // this is the token that expires super quickly
     refresh_tokens: Array<string>,
     consumed_refresh_tokens: Array<string>,
-    permissions: UserPermissionsType
+    permissions: UserPermissionsType,
+    activeGames: Array<string>
 }
 
 // TODO Look into rewriting with Partials?
@@ -21,6 +22,7 @@ interface DBUsersTypeWrite {
     access_token?: string, // this is the token that expires super quickly
     refresh_tokens?: Array<string>,
     consumed_refresh_tokens?: Array<string>,
-    permissions?: UserPermissionsType
+    permissions?: UserPermissionsType,
+    activeGames?: Array<string>
 }
 export type {DBUsersType, DBUsersTypeWrite}

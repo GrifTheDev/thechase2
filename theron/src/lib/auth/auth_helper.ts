@@ -5,7 +5,8 @@ import { MessageResponseType } from "../types/message/MessageResponseType";
 import { MessageTypes } from "../types/message/MessageTypes";
 import { AccessLevels } from "../types/permissions/AccessLevels";
 import { WebSocket } from "ws";
-import { checkGameIDValidity } from "../utils/utils";
+import { checkGameIDValidity, sendWSResponse } from "../utils/utils";
+import { queryWhereUsersData, readDocData, readUsersData } from "../database/database";
 
 async function manageAccessLevel(
   clientRecord: {
@@ -21,26 +22,74 @@ async function manageAccessLevel(
     receivedPayload.type != MessageTypes.CREDENTIALS &&
     receivedPayload.type != MessageTypes.RECONNECT
   ) {
-    logger.log({
-      level: "debug",
-      message: `An unauthorized request has been attempted (clientID: ${receivedPayload.clientID}). Disconnecting user.`,
-    });
-
-    const response: MessageResponseType = {
-      type: MessageTypes.ERR_UNAUTHORIZED,
-      data: {
+    return sendWSResponse(
+      clientRecord.socket,
+      MessageTypes.ERR_UNAUTHORIZED,
+      {
         message:
           "You MUST send a CREDENTIALS request before sending any other requests to the Theron service.",
       },
-    };
-    clientRecord.socket.send(JSON.stringify(response));
-    return clientRecord.socket.terminate();
+      `An unauthorized request has been attempted (clientID: ${receivedPayload.clientID}). Disconnecting user.`,
+      true
+    );
   } else if (receivedPayload.type == MessageTypes.CREDENTIALS) {
     const payloadData = receivedPayload.data;
     const authType = Object.keys(payloadData);
 
     // * Admin case
     if (authType.includes("authToken") && authType.includes("gameID")) {
+      const userDoc = (await queryWhereUsersData("access_token", payloadData.authToken, "==", "first"))
+
+      // * 1. Check if account exists
+      if (userDoc == undefined)
+        return sendWSResponse(
+          clientRecord.socket,
+          MessageTypes.ERR_UNAUTHORIZED,
+          { message: "The account provided does not exist." },
+          `Client tried to access a non-existent account (clientID: ${receivedPayload.clientID}).`,
+          true
+        );
+
+      // * 2. Check if the game code is valid.
+      if ((await checkGameIDValidity(receivedPayload.data.gameID)) == false)
+        return sendWSResponse(
+          clientRecord.socket,
+          MessageTypes.ERR_INVALID_GAMEID,
+          { message: "The game ID provided is inavlid." },
+          `A client (clientID: ${receivedPayload.clientID}) attempted to authenticate but provided an invalid gameID. Disconnecting user.`,
+          true
+        );
+
+      // * 3. Check if user is an admin of the given game.
+      if (!userDoc.docs[0].data().activeGames.includes(receivedPayload.data.gameID))
+        return sendWSResponse(
+          clientRecord.socket,
+          MessageTypes.ERR_UNAUTHORIZED,
+          { message: "You are not an admin of the game code provided." },
+          `User tried to access a game with privilege where they do not have such (clientID: ${receivedPayload.clientID}). Disconnecting user.`,
+          true
+        );
+
+      // * 4. Set proper access level & inform user  
+      ClientsCache.setSpecific(
+        clientRecord.clientID,
+        "accessLevel",
+        AccessLevels.ADMIN
+      );
+
+      ClientsCache.setSpecific(
+        clientRecord.clientID,
+        "gameID",
+        receivedPayload.data.gameID
+      );
+
+      return sendWSResponse(
+        clientRecord.socket,
+        MessageTypes.CREDENTIALS_SUCCESS,
+        {},
+        `Player authenticated as admin (clientID: ${receivedPayload.clientID}), client record updated.`,
+        false
+      );
     }
     // * Player case
     else if (!authType.includes("authToken") && authType.includes("gameID")) {
@@ -50,23 +99,15 @@ async function manageAccessLevel(
         AccessLevels.PLAYER
       );
 
-      if (await (checkGameIDValidity(receivedPayload.data.gameID)) == false) {
-        logger.log({
-            level: "debug",
-            message: `A client (clientID: ${receivedPayload.clientID}) attempted to authenticate but provided an invalid gameID. Disconnecting user.`,
-          });
-      
-          const response: MessageResponseType = {
-            type: MessageTypes.ERR_INVALID_GAMEID,
-            data: {
-              message:
-                "The game ID provided is inavlid.",
-            },
-          };
-          clientRecord.socket.send(JSON.stringify(response));
-          return clientRecord.socket.terminate();
+      if ((await checkGameIDValidity(receivedPayload.data.gameID)) == false) {
+        return sendWSResponse(
+          clientRecord.socket,
+          MessageTypes.ERR_INVALID_GAMEID,
+          { message: "The game ID provided is inavlid." },
+          `A client (clientID: ${receivedPayload.clientID}) attempted to authenticate but provided an invalid gameID. Disconnecting user.`,
+          true
+        );
       }
-
 
       ClientsCache.setSpecific(
         clientRecord.clientID,
@@ -74,33 +115,26 @@ async function manageAccessLevel(
         receivedPayload.data.gameID
       );
 
-      logger.log({
-        level: "debug",
-        message: `Player authenticated (clientID: ${receivedPayload.clientID}), client record updated.`,
-      });
-
-      const response: MessageResponseType = {
-        type: MessageTypes.CREDENTIALS_SUCCESS,
-        data: {},
-      };
-      return clientRecord.socket.send(JSON.stringify(response));
+      return sendWSResponse(
+        clientRecord.socket,
+        MessageTypes.CREDENTIALS_SUCCESS,
+        {},
+        `Player authenticated (clientID: ${receivedPayload.clientID}), client record updated.`,
+        false
+      );
     }
     // * ERROR
     else {
-      logger.log({
-        level: "debug",
-        message: "A CREDENTIALS request was made without the gameID property.",
-      });
-
-      const response: MessageResponseType = {
-        type: MessageTypes.ERR_MALFORMED_REQUEST,
-        data: {
+      return sendWSResponse(
+        clientRecord.socket,
+        MessageTypes.ERR_MALFORMED_REQUEST,
+        {
           message:
             "All CREDENTIALS requests must at least contain a gameCode property.",
         },
-      };
-      clientRecord.socket.send(JSON.stringify(response));
-      return clientRecord.socket.terminate();
+        "A CREDENTIALS request was made without the gameID property.",
+        true
+      );
     }
   }
 }
