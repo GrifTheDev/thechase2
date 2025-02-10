@@ -19,8 +19,7 @@ async function manageAccessLevel(
 ) {
   // * Unauthenticated user is trying to access the service.
   if (
-    receivedPayload.type != MessageTypes.CREDENTIALS &&
-    receivedPayload.type != MessageTypes.RECONNECT
+    receivedPayload.type != MessageTypes.CREDENTIALS 
   ) {
     return sendWSResponse(
       clientRecord.socket,

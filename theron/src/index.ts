@@ -66,6 +66,7 @@ wss.on("connection", function connection(ws) {
       clientID: string;
       accessLevel: AccessLevels;
     } = ClientsCache.get(receivedPayload.clientID);
+    
     if (clientRecord.accessLevel == AccessLevels.NONE) {
       manageAccessLevel(clientRecord, receivedPayload);
     }
