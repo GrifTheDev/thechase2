@@ -1,4 +1,6 @@
 /* 
+  * Simple CacheManager by Teo Milić v1.1.0.
+  *
   * Before writing this I felt overwhelmed at the idea of creating even this simple
   * in-memory cache. However, the sources listed below helped me a ton with understanding
   * what a cache is and how to write this type of cache.
@@ -51,6 +53,21 @@ class CacheManager {
 
     const itemLifetime = Date.now() + (this.peTTL)
     this.cacheData[key] = {data: value, TTL: itemLifetime}
+    return
+  }
+
+  public setSpecific(cacheKey: string | number, entryKey: string | number, value: any) {
+
+    if (this.cacheExceededMaxSize() != false) {
+      logger.log({
+        level: "error",
+        message: `Cache exceeded max size, cannot set new elements`,
+      });
+      return undefined
+    }
+
+    // TODO trycatch
+    this.cacheData[cacheKey].data[entryKey] = value
     return
   }
 

@@ -1,5 +1,7 @@
 enum WebSocketMessage {
-    CREDENTIALS = "CREDENTIALS"
+    CREDENTIALS = "CREDENTIALS",
+
+    TEST = "TEST"
 }
 
 export {WebSocketMessage}

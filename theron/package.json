@@ -10,9 +10,12 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@firebase/app": "^0.11.0",
+    "@firebase/firestore": "^4.7.7",
     "@types/node": "^22.13.1",
     "@types/ws": "^8.5.14",
     "dotenv": "^16.4.7",
+    "firebase": "^11.3.0",
     "winston": "^3.17.0",
     "ws": "^8.18.0"
   },

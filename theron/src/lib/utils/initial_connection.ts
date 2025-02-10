@@ -4,6 +4,7 @@ import { MessageTypes } from "../types/message/MessageTypes";
 import { WebSocket } from "ws";
 import { generateRandomBase64String } from "./utils";
 import { MessageResponseType } from "../types/message/MessageResponseType";
+import { AccessLevels } from "../types/permissions/AccessLevels";
 
 async function initialConnectionResponse(ws: WebSocket) {
   //const clientID = generateRandomBase64String(24);
@@ -15,7 +16,7 @@ async function initialConnectionResponse(ws: WebSocket) {
   };
 
   ws.send(JSON.stringify(initialPayloadResponse));
-  ClientsCache.set(clientID, {socket: ws, gameID: ""});
+  ClientsCache.set(clientID, {socket: ws, gameID: "", clientID: clientID, accessLevel: AccessLevels.NONE});
 
   return;
 }

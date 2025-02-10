@@ -5,6 +5,9 @@ import { MessageTypes } from "./lib/types/message/MessageTypes";
 import "dotenv/config";
 import { initialConnectionResponse } from "./lib/utils/initial_connection";
 import { MessageResponseType } from "./lib/types/message/MessageResponseType";
+import { ClientsCache } from "./lib/cache/stores/ClientsCache";
+import { AccessLevels } from "./lib/types/permissions/AccessLevels";
+import { manageAccessLevel } from "./lib/auth/auth_helper";
 
 const wss: WebSocketServer = new WebSocketServer({ port: 8080 });
 
@@ -15,13 +18,11 @@ wss.on("listening", () => {
 wss.on("connection", function connection(ws) {
   initialConnectionResponse(ws);
 
-  
-
   ws.on("message", (rawData) => {
-    let data: MessagePayloadType;
+    let receivedPayload: MessagePayloadType;
 
     try {
-      data = JSON.parse(rawData.toString());
+      receivedPayload = JSON.parse(rawData.toString());
     } catch (error) {
       logger.log({
         level: "debug",
@@ -29,45 +30,66 @@ wss.on("connection", function connection(ws) {
           "An error occured whilst trying to parse the JSON data sent to Theron. Disconnecting user.",
       });
 
-      const response: MessageResponseType = {type: MessageTypes.ERR_MALFORMED_REQUEST, data: {message: "All submited requests must be parsable by JSON.parse()."}}
-      ws.send(JSON.stringify(response))
+      const response: MessageResponseType = {
+        type: MessageTypes.ERR_MALFORMED_REQUEST,
+        data: {
+          message: "All submited requests must be parsable by JSON.parse().",
+        },
+      };
+      ws.send(JSON.stringify(response));
       return ws.terminate();
     }
 
-    if (data.clientID == undefined || data.clientID == "") {
+    if (
+      receivedPayload.clientID == undefined ||
+      ClientsCache.get(receivedPayload.clientID) == undefined
+    ) {
       logger.log({
         level: "debug",
-        message:
-          "A request was made without providing a clientID. Disconnecting user.",
+        message: `A request was made without providing a clientID or an invalid clientID was provided (clientID: ${receivedPayload.clientID}). Disconnecting user.`,
       });
-      ws.terminate();
-      return 
+
+      const response: MessageResponseType = {
+        type: MessageTypes.ERR_NO_CREDENTIALS,
+        data: {
+          message:
+            "All requests to the Theron service must be accompanied by a clientID.",
+        },
+      };
+      ws.send(JSON.stringify(response));
+      return ws.terminate();
     }
 
-    switch(data.type) {
-      case MessageTypes.CREDENTIALS: {
+    const clientRecord: {
+      socket: WebSocket;
+      gameID: string;
+      clientID: string;
+      accessLevel: AccessLevels;
+    } = ClientsCache.get(receivedPayload.clientID);
+    if (clientRecord.accessLevel == AccessLevels.NONE) {
+      manageAccessLevel(clientRecord, receivedPayload);
+    }
 
-        
+    // * If an unauthenticated user is attempting to access, we must see if they wish to be authorized.
 
-        break
+    switch (receivedPayload.type) {
+      case MessageTypes.ERR_MALFORMED_REQUEST: {
+        break;
       }
-        
-        
-
     }
   });
 
   ws.on("error", (error) => {
     logger.log({
       level: "error",
-      message: `Websocket error: ${error}`
-    })
+      message: `Websocket error: ${error}`,
+    });
   });
 });
 
-process.on('uncaughtException', (error) => {
+process.on("uncaughtException", (error) => {
   logger.log({
     level: "error",
-    message: `Service error: ${error}`
-  })
-})
+    message: `Service error: ${error}`,
+  });
+});

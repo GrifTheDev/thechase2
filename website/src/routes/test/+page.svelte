@@ -26,7 +26,9 @@
   function sendMsg() {
     if (ws && ws.readyState === WebSocket.OPEN) {
       /* ws.send(JSON.stringify({type: "hello", message: "new"})) */
-    ws.send(JSON.stringify({clientID: "bFCE7R5CDNeJe1xuq7e2IAU52geN3sGf", type: WebSocketMessage.CREDENTIALS}))
+      // bFCE7R5CDNeJe1xuq7e2IAU52geN3sGf
+      // ws.send(JSON.stringify({clientID: "bFCE7R5CDNeJe1xuq7e2IAU52geN3sGf", type: WebSocketMessage.CREDENTIALS, data: {gameCode: "776281", auth_token: "sometoken"}}))
+      ws.send(JSON.stringify({clientID: "bFCE7R5CDNeJe1xuq7e2IAU52geN3sGf", type: WebSocketMessage.CREDENTIALS, data: {gameID: "398240"}}))
     
     }
   }
