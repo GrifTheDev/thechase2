@@ -1,7 +1,5 @@
 import { ClientsCache } from "../cache/stores/ClientsCache";
-import { logger } from "../logger";
 import { MessagePayloadType } from "../types/message/MessagePayloadType";
-import { MessageResponseType } from "../types/message/MessageResponseType";
 import { MessageTypes } from "../types/message/MessageTypes";
 import { AccessLevels } from "../types/permissions/AccessLevels";
 import { WebSocket } from "ws";

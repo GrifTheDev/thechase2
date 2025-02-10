@@ -1,6 +1,6 @@
 <script lang="ts">
   import DefaultButton from "$lib/components/buttons/DefaultButton.svelte";
-  import { WebSocketMessage } from "$lib/types/misc/websocket_msg_types";
+  import { WebSocketMessage } from "$lib/types/websocket/websocket_msg_types";
 
   let ws: WebSocket
   function connectToWS() {

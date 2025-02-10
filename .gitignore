@@ -1,23 +1,23 @@
-website/node_modules
+pyloros/node_modules
 theron/node_modules
 
 # Output
-website/.output
-website/.vercel
-website/.svelte-kit
-website/build
+pyloros/.output
+pyloros/.vercel
+pyloros/.svelte-kit
+pyloros/build
 
 theron/build
 
 # OS
-website/.DS_Store
-website/Thumbs.db
+pyloros/.DS_Store
+pyloros/Thumbs.db
 
 # Env
-website/.env
-website/.env.*
-website/!.env.example
-website/!.env.test
+pyloros/.env
+pyloros/.env.*
+pyloros/!.env.example
+pyloros/!.env.test
 
 theron/.env
 theron/.env.*
@@ -25,9 +25,9 @@ theron/!.env.example
 theron/!.env.test
 
 # Vite
-website/vite.config.js.timestamp-*
-website/vite.config.ts.timestamp-*
+pyloros/vite.config.js.timestamp-*
+pyloros/vite.config.ts.timestamp-*
 
 # SHH
-website/src/lib/database/spec.md
-website/src/lib/server/auth/spec.md
+pyloros/src/lib/database/spec.md
+pyloros/src/lib/server/auth/spec.md

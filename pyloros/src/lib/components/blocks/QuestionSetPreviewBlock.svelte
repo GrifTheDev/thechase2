@@ -28,7 +28,7 @@
     // * Players will connect to domain.com/player
     // * Host will have two pages domain.com/app/game/admin
     // *                          domain.com/app/game/display
-    await goto("/app/game/admin");
+    await goto(`/app/game/admin?qID=${encodeURIComponent(questionSetData.id)}`);
   }
 </script>
 

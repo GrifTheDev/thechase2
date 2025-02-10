@@ -1,13 +1,14 @@
 import type { RequestHandler } from "./$types";
 import type { ServerResponseType } from "$lib/types/misc/server_response";
 import { QuestionSetCache } from "$lib/server/cache/stores/question_sets_cache";
-import { readGamesData, updateGamesData } from "$lib/database/database";
+import { queryWhereUsersData, readGamesData, readUsersData, updateGamesData, updateUsersData } from "$lib/database/database";
 import { logger } from "$lib/server/logger/logger";
 import type { DBGameType } from "$lib/types/database/games";
 import { GameState } from "$lib/types/game/game_state_enum";
 
 export const POST: RequestHandler = async ({ request, cookies, url }) => {
   const { qSetID } = await request.json();
+  const authToken = cookies.get("AccessToken")!
 
   let responseObject: ServerResponseType = {
     code: 200,
@@ -86,6 +87,9 @@ export const POST: RequestHandler = async ({ request, cookies, url }) => {
 
   // * 5. Add gameID data.
   responseObject.data = {gameID: gameID}
+
+  const usrData = (await queryWhereUsersData("access_token", authToken, "==", "first"))?.docs[0]
+  if (usrData != undefined) updateUsersData(usrData?.id, {activeGames: [...usrData?.data().activeGames, gameID]})
 
   return Response.json(responseObject);
 };
