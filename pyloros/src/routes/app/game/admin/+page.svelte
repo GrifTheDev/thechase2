@@ -16,10 +16,6 @@
   import type { MessageResponseType } from "$lib/types/websocket/message_response_type";
   import { WebSocketMessage } from "$lib/types/websocket/websocket_msg_types";
 
-  /*  if (gameInfo != undefined) {
-      let key = GameState[gameInfo.state]
-      gameState.state = GameState[key as keyof typeof GameState]    
-    } */
   let {
     data,
   }: {
@@ -27,6 +23,8 @@
   } = $props();
 
   let ws: WebSocket;
+  let currentTeams: Array<{id: string, displayName: string, type: "HUNTER" | "PLAYER"}> = $state([])
+
   if (browser) {
     if (data.qSetID == undefined || data.authToken == undefined) {
       console.log(
@@ -39,12 +37,11 @@
     ws.onmessage = async (event) => {
       console.log(event.data)
       const wsMessagePayload: MessageResponseType = JSON.parse(event.data);
-      const clientID = wsMessagePayload.data.clientID;
-
+      
       switch (wsMessagePayload.type) {
         case WebSocketMessage.CREDENTIALS_REQUEST: {
-
           const gameExists = localStorage.getItem("gameData")
+          const clientID = wsMessagePayload.data.clientID;
 
           if (gameExists == null || gameExists == undefined || gameExists == "undefined") {
             const req = await fetch("/api/game/start", {
@@ -73,11 +70,22 @@
               })
             );
           }
-
-          
         }
+
         case WebSocketMessage.CREDENTIALS_SUCCESS: {
           gameState.state = GameState.PLAYERS_JOINING;
+        }
+
+        case WebSocketMessage.GAME_TEAMS_UPDATE: {
+          console.log(wsMessagePayload.data.displayName, wsMessagePayload.data.displayName != undefined)
+          if (wsMessagePayload.data.displayName != undefined) {
+            currentTeams.push({
+            displayName: wsMessagePayload.data.displayName,
+            id: wsMessagePayload.data.id,
+            type: wsMessagePayload.data.type
+          })
+          }
+          
         }
       }
     };
@@ -94,6 +102,6 @@
   {#if gameState.state == GameState.GAME_NOT_STARTED}
     <p class="text-white">Loading...</p>
   {:else if gameState.state == GameState.PLAYERS_JOINING}
-    <PlayersJoining />
+    <PlayersJoining playerDataObject={currentTeams} />
   {/if}
 </div>

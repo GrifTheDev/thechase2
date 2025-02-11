@@ -9,7 +9,7 @@ import { AccessLevels } from "../types/permissions/AccessLevels";
 async function initialConnectionResponse(ws: WebSocket) {
   //const clientID = generateRandomBase64String(24);
   // !!! TESTING ONLY
-  const clientID = "bFCE7R5CDNeJe1xuq7e2IAU52geN3sGf"
+  const clientID = generateRandomBase64String(24)
   const initialPayloadResponse: MessageResponseType = {
     type: MessageTypes.CREDENTIALS_REQUEST,
     data: { version: "0.0.1", clientID: clientID },

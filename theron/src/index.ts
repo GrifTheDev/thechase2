@@ -8,6 +8,10 @@ import { MessageResponseType } from "./lib/types/message/MessageResponseType";
 import { ClientsCache } from "./lib/cache/stores/ClientsCache";
 import { AccessLevels } from "./lib/types/permissions/AccessLevels";
 import { manageAccessLevel } from "./lib/auth/auth_helper";
+import { GamesCache } from "./lib/cache/stores/GamesCache";
+import { CachedGames } from "./lib/types/game/CachedGames";
+import { generateRandomBase64String } from "./lib/utils/utils";
+import { createTeam } from "./lib/game/manage_teams";
 
 const wss: WebSocketServer = new WebSocketServer({ port: 8080 });
 
@@ -72,7 +76,11 @@ wss.on("connection", function connection(ws) {
     }
 
     switch (receivedPayload.type) {
-      case MessageTypes.ERR_MALFORMED_REQUEST: {
+      case MessageTypes.CREATE_TEAM: {
+        logger.debug(`${receivedPayload}`)
+        logger.debug(`${receivedPayload.data.displayName}`)
+        logger.debug(`${receivedPayload.data.displayName != ""}`)
+        if (receivedPayload.data.displayName != "") createTeam(receivedPayload.data.gameID, receivedPayload.clientID, receivedPayload.data.displayName)
         break;
       }
     }

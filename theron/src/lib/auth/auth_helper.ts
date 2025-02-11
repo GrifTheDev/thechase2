@@ -5,6 +5,8 @@ import { AccessLevels } from "../types/permissions/AccessLevels";
 import { WebSocket } from "ws";
 import { checkGameIDValidity, sendWSResponse } from "../utils/utils";
 import { queryWhereUsersData, readDocData, readUsersData } from "../database/database";
+import { GamesCache } from "../cache/stores/GamesCache";
+import { createGame } from "../game/create_game";
 
 async function manageAccessLevel(
   clientRecord: {
@@ -79,6 +81,8 @@ async function manageAccessLevel(
         "gameID",
         receivedPayload.data.gameID
       );
+
+      if (GamesCache.get(receivedPayload.data.gameID) == undefined) await createGame(receivedPayload.data.gameID, clientRecord.clientID)
 
       return sendWSResponse(
         clientRecord.socket,

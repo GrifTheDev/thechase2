@@ -5,19 +5,22 @@
   import { getDB } from "$lib/database/initialize_firebase";
   const { db } = getDB();
 
-
+  const {
+    playerDataObject
+  }: {
+    playerDataObject: Array<{id: string, displayName: string, type: "HUNTER" | "PLAYER"}>
+  } = $props();
 
 </script>
 <!-- 
 <p class="text-white">{JSON.stringify(gamesDocLive)}</p> -->
 <Heading1 label="Players Joined" />
 
-<!--   {#each gamesDocLive.player_teams as player}
+{#each playerDataObject as player}
   <div class="w-1/6 h-10 bg-white rounded-md text-center text-2xl flex flex-col items-center justify-center">
-    <p class="text-black font-bold">{player.display_name}</p>
+    <p class="text-black font-bold">{player.displayName}</p>
   </div>
-  {/each}
- -->
+{/each}
 
 
 
